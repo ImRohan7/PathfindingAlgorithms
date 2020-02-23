@@ -1,18 +1,44 @@
 #include "ofApp.h"
 #include <queue>
+#include "../Algorithms.h"
+
+//----------
+// Example
+GraphWithWeights make_example() {
+	GraphWithWeights grid(10, 10);
+	add_rect(grid, 1, 7, 4, 9); // walls
+	typedef Location L;
+	// dense areas almost as obstacles
+	grid.forests = std::unordered_set<Location>{
+	  L{3, 4}, L{3, 5}, L{4, 1}, L{4, 2},
+	  L{4, 3}, L{4, 4}, L{4, 5}, L{4, 6},
+	  L{4, 7}, L{4, 8}, L{5, 1}, L{5, 2},
+	  L{5, 3}, L{5, 4}, L{5, 5}, L{5, 6},
+	  L{5, 7}, L{5, 8}, L{6, 2}, L{6, 3},
+	  L{6, 4}, L{6, 5}, L{6, 6}, L{6, 7},
+	  L{7, 3}, L{7, 4}, L{7, 5}
+	};
+	return grid;
+}
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	std::queue<int> q;
-	q.push(2);
-	q.push(3);
-	q.push(4);
+	GraphWithWeights grid = make_example();
+	Location start{ 1, 4 };
+	Location goal{ 8, 5 };
+	std::unordered_map<Location, Location> came_from;
+	std::unordered_map<Location, double> cost_so_far;
+	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
+	draw_grid(grid, 2, nullptr, &came_from);
+	std::cout << '\n';
+	draw_grid(grid, 3, &cost_so_far, nullptr);
+	std::cout << '\n';
+	std::vector<Location> path = reconstruct_path(start, goal, came_from);
+	draw_grid(grid, 3, nullptr, nullptr, &path);
 
-	int a = q.front();
-	q.pop();
-	int b = q.front();
-
+	//auto a = heuristic_1(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
+	//auto b =heuristic_2(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
 }
 
 //--------------------------------------------------------------
