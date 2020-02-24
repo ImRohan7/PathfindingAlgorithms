@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <iostream>
-
 #include <queue>
 #include <array>
 #include <unordered_set>
@@ -10,6 +9,35 @@
 struct Location {
 	int x, y;
 };
+
+
+struct Node {
+	char ID;
+};
+
+struct Graph { 
+
+	map<Node, vector<Node>> mLinks;
+	map<pair<Node, Node>, double> mCosts; // unique 
+
+	std::vector<Node> getNeighbours(Node iNode)
+	{
+		return mLinks[iNode];
+	}
+
+	double getCost(Node from, Node to)
+	{
+		pair<Node, Node> pr(from, to);
+		map<pair<Node, Node>, double>::iterator it;
+		it = mCosts.find(pr);
+		if (it != mCosts.end())
+		{
+			return it->second;
+		}
+	}
+
+};
+
 
 namespace std {
 	/* implement hash function to put GridLocation into an unordered_set */
@@ -128,6 +156,11 @@ void add_rect(SquareGrid& grid, int x1, int y1, int x2, int y2) {
 			grid.mObstacles.insert(Location{ x, y });
 		}
 	}
+}
+
+void add_Obstacle(SquareGrid& grid, Location iLoc)
+{
+	grid.mObstacles.insert(iLoc);
 }
 
 
