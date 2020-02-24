@@ -20,8 +20,10 @@
     <ClInclude Include="src\ofApp.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DataStructures.h" />
     <ClInclude Include="Algorithms.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructures.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

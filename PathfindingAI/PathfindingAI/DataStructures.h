@@ -12,7 +12,7 @@ struct Location {
 };
 
 namespace std {
-	/* implement hash function so we can put GridLocation into an unordered_set */
+	/* implement hash function to put GridLocation into an unordered_set */
 	template <> struct hash<Location> {
 		typedef Location argument_type;
 		typedef std::size_t result_type;
@@ -47,29 +47,34 @@ struct PriorityQueue {
 
 
 struct SquareGrid {
-	static std::array<Location, 4> DIRS; // directions
+	static std::array<Location, 4> mDirections; // four directions
+	std::unordered_set<Location> mObstacles; // walls or obstacles
+	int mWidth, mHeight; // the size of grid
 
-	int width, height;
-	std::unordered_set<Location> walls;
 
 	SquareGrid(int width_, int height_)
-		: width(width_), height(height_) {}
+		: mWidth(width_), mHeight(height_) {}
 
-	bool in_bounds(Location id) const {
-		return 0 <= id.x && id.x < width
-			&& 0 <= id.y && id.y < height;
+	// check if a point is in range
+	bool IsInBounds(Location id) const {
+		bool state = 0 <= id.x && id.x < mWidth
+			&& 0 <= id.y && id.y < mHeight;
+
+			return state;
 	}
 
-	bool passable(Location id) const {
-		return walls.find(id) == walls.end();
+	// whether a valid node or obstacle/wall
+	bool IsValid(Location id) const {
+		return mObstacles.find(id) == mObstacles.end();
 	}
 
+	// return all neighbours
 	std::vector<Location> neighbors(Location id) const {
 		std::vector<Location> results;
 
-		for (Location dir : DIRS) {
+		for (Location dir : mDirections) {
 			Location next{ id.x + dir.x, id.y + dir.y };
-			if (in_bounds(next) && passable(next)) {
+			if (IsInBounds(next) && IsValid(next)) {
 				results.push_back(next);
 			}
 		}
@@ -84,7 +89,7 @@ struct SquareGrid {
 };
 
 // The four direction for neighbour
-std::array<Location, 4> SquareGrid::DIRS =
+std::array<Location, 4> SquareGrid::mDirections =
 { Location{1, 0}, Location{0, -1}, Location{-1, 0}, Location{0, 1} };
 
 // ------------------- Helpers ----------------
@@ -120,7 +125,7 @@ struct GraphWithWeights : SquareGrid {
 void add_rect(SquareGrid& grid, int x1, int y1, int x2, int y2) {
 	for (int x = x1; x < x2; ++x) {
 		for (int y = y1; y < y2; ++y) {
-			grid.walls.insert(Location{ x, y });
+			grid.mObstacles.insert(Location{ x, y });
 		}
 	}
 }

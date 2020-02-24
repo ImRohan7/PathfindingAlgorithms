@@ -50,7 +50,7 @@ void Dijkstra_Search
 		}
 
 		for (Location next : graph.neighbors(current)) {
-			// cal cost
+			// calculate cost
 			double new_cost = cost_so_far[current] + graph.cost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
