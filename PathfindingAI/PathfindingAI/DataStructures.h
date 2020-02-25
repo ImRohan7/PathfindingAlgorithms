@@ -10,35 +10,6 @@ struct Location {
 	int x, y;
 };
 
-
-struct Node {
-	char ID;
-};
-
-struct Graph { 
-
-	map<Node, vector<Node>> mLinks;
-	map<pair<Node, Node>, double> mCosts; // unique 
-
-	std::vector<Node> getNeighbours(Node iNode)
-	{
-		return mLinks[iNode];
-	}
-
-	double getCost(Node from, Node to)
-	{
-		pair<Node, Node> pr(from, to);
-		map<pair<Node, Node>, double>::iterator it;
-		it = mCosts.find(pr);
-		if (it != mCosts.end())
-		{
-			return it->second;
-		}
-	}
-
-};
-
-
 namespace std {
 	/* implement hash function to put GridLocation into an unordered_set */
 	template <> struct hash<Location> {
@@ -48,7 +19,55 @@ namespace std {
 			return std::hash<int>()(id.x ^ (id.y << 4));
 		}
 	};
+
 }
+
+struct Node {
+	char id;
+
+	Node() :id('a') {}
+
+	Node(char c) : id(c) {}
+};
+	struct NodeHash {
+		std::size_t operator()(const Node& id) const noexcept {
+			return std::hash<char>()(id.id);
+		}
+	};
+
+	struct NodeEq {
+		bool operator()(const Node& a, const Node& b) const noexcept {
+			return a.id == b.id;
+		}
+	};
+
+struct Graph {
+
+	std::unordered_map<Node, std::vector<Node>, NodeHash, NodeEq> mLinks;
+	std::unordered_map<std::pair<Node, Node>, double> mCosts; // unique 
+
+	std::vector<Node> getNeighbours(const Node &iNode)
+	{
+		return mLinks[iNode];
+	}
+
+	double getCost(const Node &from, const Node &to)
+	{
+		std::pair<Node, Node> pr(from, to);
+		std::unordered_map<std::pair<Node, Node>, double>::iterator it;
+		it = mCosts.find(pr);
+		if (it != mCosts.end())
+		{
+			return it->second;
+		}
+
+		return 0.0f;
+	}
+
+};
+
+
+
 
 // Priority Queue
 template<typename T, typename priority_t>
@@ -97,7 +116,7 @@ struct SquareGrid {
 	}
 
 	// return all neighbours
-	std::vector<Location> neighbors(Location id) const {
+	std::vector<Location> getNeighbours(Location id) const {
 		std::vector<Location> results;
 
 		for (Location dir : mDirections) {
@@ -144,7 +163,9 @@ struct GraphWithWeights : SquareGrid {
 	// forest are dense areas with very high cost/weights
 	std::unordered_set<Location> forests;
 	GraphWithWeights(int w, int h) : SquareGrid(w, h) {}
-	double cost(Location from_node, Location to_node) const {
+	
+	double getCost(Location from_node, Location to_node) const
+	{
 		return forests.find(to_node) != forests.end() ? 5 : 1;
 	}
 };

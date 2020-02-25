@@ -24,18 +24,22 @@ double heuristic_2(Location a, Location b)
 	return z;
 }
 
+	
+
+
 // ================================================
 // =======	ALGORITHMS
 
-// Dijkstra
+// Dijkstra template for any graph
+template<class Graph, class Node>
 void Dijkstra_Search
-(GraphWithWeights graph,
-	Location start,
-	Location goal,
-	std::unordered_map<Location, Location>& came_from,
-	std::unordered_map<Location, double>& cost_so_far)
+(Graph graph,
+	Node start,
+	Node goal,
+	std::unordered_map<Node, Node>& came_from,
+	std::unordered_map<Node, double>& cost_so_far)
 {
-	PriorityQueue<Location, double> container; // open list
+	PriorityQueue<Node, double> container; // open list
 	container.put(start, 0);
 
 	// add start node into open list
@@ -49,9 +53,9 @@ void Dijkstra_Search
 			break;	// if we reached the goal already
 		}
 
-		for (Location next : graph.neighbors(current)) {
+		for (Node next : graph.getNeighbours(current)) {
 			// calculate cost
-			double new_cost = cost_so_far[current] + graph.cost(current, next);
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
 				// if it is not inside the closed list 
@@ -85,8 +89,8 @@ void AStar_search
 			break;
 		}
 
-		for (Location next : graph.neighbors(current)) {
-			double new_cost = cost_so_far[current] + graph.cost(current, next);
+		for (Location next : graph.getNeighbours(current)) {
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
 				cost_so_far[next] = new_cost;
