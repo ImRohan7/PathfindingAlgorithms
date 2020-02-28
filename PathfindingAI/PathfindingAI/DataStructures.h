@@ -29,22 +29,26 @@ struct Node {
 
 	Node(char c) : id(c) {}
 };
-	struct NodeHash {
-		std::size_t operator()(const Node& id) const noexcept {
-			return std::hash<char>()(id.id);
-		}
-	};
 
-	struct NodeEq {
-		bool operator()(const Node& a, const Node& b) const noexcept {
-			return a.id == b.id;
-		}
-	};
+struct NodeHash {
+	std::size_t operator()(const Node& id) const noexcept {
+		return std::hash<char>()(id.id);
+	}
+};
+
+struct NodeEq {
+	bool operator()(const Node& a, const Node& b) const noexcept {
+		return a.id == b.id;
+	}
+};
 
 struct Graph {
-
+	
 	std::unordered_map<Node, std::vector<Node>, NodeHash, NodeEq> mLinks;
-	std::unordered_map<std::pair<Node, Node>, double> mCosts; // unique 
+	std::vector<pair<Node, Node>> mPair;
+	std::vector<double> mCost;
+
+	//std::unordered_map<std::pair<Node, Node>, double, NodeHash, NodeEq> mCosts; // unique 
 
 	std::vector<Node> getNeighbours(const Node &iNode)
 	{
@@ -54,14 +58,24 @@ struct Graph {
 	double getCost(const Node &from, const Node &to)
 	{
 		std::pair<Node, Node> pr(from, to);
-		std::unordered_map<std::pair<Node, Node>, double>::iterator it;
+		int ct = 0;
+		for (int i = 0; i < mPair.size(); i++)
+		{
+			if (mPair[i] == pr)
+			{
+				return mCost[i];
+	
+			}
+		}
+
+		/*std::unordered_map<std::pair<Node, Node>, double>::iterator it;
 		it = mCosts.find(pr);
 		if (it != mCosts.end())
 		{
 			return it->second;
 		}
 
-		return 0.0f;
+		return 0.0f;*/
 	}
 
 };
