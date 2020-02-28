@@ -28,6 +28,11 @@ struct Node {
 	Node() :id('a') {}
 
 	Node(char c) : id(c) {}
+
+	bool operator==(Node oth)
+	{
+		return  id == oth.id;
+	}
 };
 
 struct NodeHash {
@@ -41,6 +46,13 @@ struct NodeEq {
 		return a.id == b.id;
 	}
 };
+
+
+bool operator==(std::pair<Node, Node> a, pair<Node, Node> b)
+{
+	return a.first == b.first && a.second == b.second;
+}
+
 
 struct Graph {
 	
@@ -61,6 +73,7 @@ struct Graph {
 		int ct = 0;
 		for (int i = 0; i < mPair.size(); i++)
 		{
+			
 			if (mPair[i] == pr)
 			{
 				return mCost[i];
@@ -78,6 +91,7 @@ struct Graph {
 		return 0.0f;*/
 	}
 
+	
 };
 
 
