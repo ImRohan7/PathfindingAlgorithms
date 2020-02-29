@@ -24,7 +24,7 @@ GraphWithWeights make_example() {
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	/*GraphWithWeights grid = make_example();
+	GraphWithWeights grid = make_example();
 	Location start{ 1, 4 };
 	Location goal{ 8, 5 };
 	std::unordered_map<Location, Location> came_from;
@@ -35,7 +35,7 @@ void ofApp::setup() {
 	draw_grid(grid, 3, &cost_so_far, nullptr);
 	std::cout << '\n';
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
-	draw_grid(grid, 3, nullptr, nullptr, &path);*/
+	draw_grid(grid, 3, nullptr, nullptr, &path);
 
 	//auto a = heuristic_1(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
 	//auto b =heuristic_2(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
@@ -47,12 +47,39 @@ void ofApp::setup() {
 
 	Graph graf;
 	graf.mLinks = { {
-		 {a, {'B', 'C', 'E'}},
+		 {a, {'B', 'C'}},
 		 {b, {'A', 'C', 'G'}},
 		 {c, {'A', 'B', 'G'}},
 		 {g, {'C', 'B'}},
 	} };
 
+	graf.mSinkPair = { 
+		{ 'A', 'B'},
+		{ 'A', 'C'},
+		{ 'B', 'A'},
+		{ 'B', 'C'},
+		{ 'B', 'G'},
+		{ 'C', 'A'},
+		{ 'C', 'B'},
+		{ 'C', 'G'},
+		{ 'G', 'C'},
+		{ 'G', 'B'},
+	};
+
+	graf.mCost = {
+		20, 40,
+		20, 10, 40,
+		40, 10, 5,
+		5, 40
+	};
+
+	auto nei = graf.getNeighbours('C');
+	std::unordered_map<Node, Node> came_fromm;
+	std::unordered_map<Node, double> cost_so_farr;
+//	std::unordered_map<Location, double> cost_so_far;
+
+	AAStar_search(graf, 'A', 'G', came_fromm, cost_so_farr);
+	int aaa = 5;
 }
 
 //--------------------------------------------------------------

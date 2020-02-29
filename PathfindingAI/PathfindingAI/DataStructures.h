@@ -10,6 +10,24 @@ struct Location {
 	int x, y;
 };
 
+struct Node {
+	char id;
+
+	Node() :id('^') {}
+
+	Node(char c) : id(c) {}
+
+	bool operator==(Node oth)
+	{
+		return  id == oth.id;
+	}
+};
+
+bool operator==(std::pair<Node, Node> a, pair<Node, Node> b)
+{
+	return a.first == b.first && a.second == b.second;
+}
+
 namespace std {
 	/* implement hash function to put GridLocation into an unordered_set */
 	template <> struct hash<Location> {
@@ -20,20 +38,16 @@ namespace std {
 		}
 	};
 
+	template <> struct hash<Node> {
+		typedef Node argument_type;
+		typedef std::size_t result_type;
+		std::size_t operator()(const Node& id) const noexcept {
+			return std::hash<int>()(id.id ^ (id.id << 4));
+		}
+	};
 }
 
-struct Node {
-	char id;
 
-	Node() :id('a') {}
-
-	Node(char c) : id(c) {}
-
-	bool operator==(Node oth)
-	{
-		return  id == oth.id;
-	}
-};
 
 struct NodeHash {
 	std::size_t operator()(const Node& id) const noexcept {
@@ -48,20 +62,15 @@ struct NodeEq {
 };
 
 
-bool operator==(std::pair<Node, Node> a, pair<Node, Node> b)
-{
-	return a.first == b.first && a.second == b.second;
-}
 
 
 struct Graph {
 	
 	std::unordered_map<Node, std::vector<Node>, NodeHash, NodeEq> mLinks;
-	std::vector<pair<Node, Node>> mPair;
+	std::vector<pair<Node, Node>> mSinkPair;
 	std::vector<double> mCost;
 
-	//std::unordered_map<std::pair<Node, Node>, double, NodeHash, NodeEq> mCosts; // unique 
-
+	// get connectors
 	std::vector<Node> getNeighbours(const Node &iNode)
 	{
 		return mLinks[iNode];
@@ -71,31 +80,16 @@ struct Graph {
 	{
 		std::pair<Node, Node> pr(from, to);
 		int ct = 0;
-		for (int i = 0; i < mPair.size(); i++)
+		for (int i = 0; i < mSinkPair.size(); i++)
 		{
-			
-			if (mPair[i] == pr)
-			{
+			if (mSinkPair[i] == pr)
 				return mCost[i];
-	
-			}
 		}
-
-		/*std::unordered_map<std::pair<Node, Node>, double>::iterator it;
-		it = mCosts.find(pr);
-		if (it != mCosts.end())
-		{
-			return it->second;
-		}
-
-		return 0.0f;*/
+		return -1.0f;
 	}
 
 	
 };
-
-
-
 
 // Priority Queue
 template<typename T, typename priority_t>
@@ -217,16 +211,16 @@ void add_Obstacle(SquareGrid& grid, Location iLoc)
 // the distances, or pass in a point_to map if you want to print
 // arrows that point to the parent location, or pass in a path vector
 // if you want to draw the path.
-template<class Graph>
-void draw_grid(const Graph& graph, int field_width,
+template<class AGraph>
+void draw_grid(const AGraph& graph, int field_width,
 	std::unordered_map<Location, double>* distances = nullptr,
 	std::unordered_map<Location, Location>* point_to = nullptr,
 	std::vector<Location>* path = nullptr) {
-	for (int y = 0; y != graph.height; ++y) {
-		for (int x = 0; x != graph.width; ++x) {
+	for (int y = 0; y != graph.mHeight; ++y) {
+		for (int x = 0; x != graph.mWidth; ++x) {
 			Location id{ x, y };
 			std::cout << std::left << std::setw(field_width);
-			if (graph.walls.find(id) != graph.walls.end()) {
+			if (graph.mObstacles.find(id) != graph.mObstacles.end()) {
 				std::cout << std::string(field_width, '#');
 			}
 			else if (point_to != nullptr && point_to->count(id)) {

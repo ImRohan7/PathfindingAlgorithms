@@ -31,15 +31,15 @@ double heuristic_2(Location a, Location b)
 // =======	ALGORITHMS
 
 // Dijkstra template for any graph
-template<class Graph, class Node>
+template<class AGraph, class ANode>
 void Dijkstra_Search
-(Graph graph,
-	Node start,
-	Node goal,
-	std::unordered_map<Node, Node>& came_from,
-	std::unordered_map<Node, double>& cost_so_far)
+(AGraph graph,
+	ANode start,
+	ANode goal,
+	std::unordered_map<ANode, ANode>& came_from,
+	std::unordered_map<ANode, double>& cost_so_far)
 {
-	PriorityQueue<Node, double> container; // open list
+	PriorityQueue<ANode, double> container; // open list
 	container.put(start, 0);
 
 	// add start node into open list
@@ -47,13 +47,13 @@ void Dijkstra_Search
 	cost_so_far[start] = 0; // close list
 
 	while (!container.empty()) {
-		Location current = container.get(); // get a new node and explore neightbours
+		ANode current = container.get(); // get a new node and explore neightbours
 
 		if (current == goal) {
 			break;	// if we reached the goal already
 		}
 
-		for (Node next : graph.getNeighbours(current)) {
+		for (ANode next : graph.getNeighbours(current)) {
 			// calculate cost
 			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
@@ -63,6 +63,39 @@ void Dijkstra_Search
 				cost_so_far[next] = new_cost; // update / insert node with cost
 				came_from[next] = current;	// update path .. how we going to the next node
 				container.put(next, new_cost); // add the neighbour into open list to explore further
+			}
+		}
+	}
+}
+
+void AAStar_search
+(Graph graph,
+	Node start,
+	Node goal,
+	std::unordered_map<Node, Node>& came_from,
+	std::unordered_map<Node, double>& cost_so_far)
+{
+	PriorityQueue<Node, double> container;
+	container.put(start, 0);
+
+	came_from[start] = start;
+	cost_so_far[start] = 0;
+
+	while (!container.empty()) {
+		Node current = container.get();
+
+		if (current == goal) {
+			break;
+		}
+
+		for (Node next : graph.getNeighbours(current)) {
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
+			if (cost_so_far.find(next) == cost_so_far.end()
+				|| new_cost < cost_so_far[next]) {
+				cost_so_far[next] = new_cost;
+				double priority = new_cost;// +heuristic_1(next, goal);
+				container.put(next, priority);
+				came_from[next] = current;
 			}
 		}
 	}
