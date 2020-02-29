@@ -17,7 +17,7 @@ struct Node {
 
 	Node(char c) : id(c) {}
 
-	bool operator==(Node oth)
+	bool operator==(const Node& oth)
 	{
 		return  id == oth.id;
 	}
@@ -88,7 +88,10 @@ struct Graph {
 		return -1.0f;
 	}
 
-	
+	bool operator==(Graph iOth)
+	{
+		return mLinks == iOth.mLinks;
+	}
 };
 
 // Priority Queue
