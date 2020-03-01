@@ -46,39 +46,43 @@ void ofApp::setup() {
 	Node g = Node('G');
 
 	Graph graf;
-	graf.mLinks = { {
+	graf.mLinks = { 
 		 {a, {'B', 'C'}},
 		 {b, {'A', 'C', 'G'}},
 		 {c, {'A', 'B', 'G'}},
 		 {g, {'C', 'B'}},
-	} };
-
-	graf.mSinkPair = { 
-		{ 'A', 'B'},
-		{ 'A', 'C'},
-		{ 'B', 'A'},
-		{ 'B', 'C'},
-		{ 'B', 'G'},
-		{ 'C', 'A'},
-		{ 'C', 'B'},
-		{ 'C', 'G'},
-		{ 'G', 'C'},
-		{ 'G', 'B'},
 	};
 
-	graf.mCost = {
-		20, 40,
-		20, 10, 40,
-		40, 10, 5,
-		5, 40
+	graf.mHeuristic = { 
+		{ {'A', 'G'}, 20.0f},
+		{ {'B', 'G'}, 10.0f},
+		{ {'C', 'G'}, 8.0f},
+		{ {'G', 'G'}, 0.0f},
+
 	};
+
+	graf.mSinkCost = {
+		{ { 'A', 'B'}, 20 },
+		{ { 'A', 'C'}, 40 },
+		{ { 'B', 'A'}, 20 },
+		{ { 'B', 'C'}, 10 },
+		{ { 'B', 'G'}, 40 },
+		{ { 'C', 'A'}, 40 },
+		{ { 'C', 'B'}, 10 },
+		{ { 'C', 'G'}, 5 },
+		{ { 'G', 'C'}, 5 },
+		{ { 'G', 'B'}, 40 },
+	};
+
 
 	//auto nei = graf.getNeighbours('C');
 	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 //	std::unordered_map<Location, double> cost_so_far;
 
-	AAStar_search(graf, 'A', 'G', came_fromm, cost_so_farr);
+	double d = graf.getHueristic('B','G');
+	AStar_search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
+//	Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
 	
 	int aaa = 5;
 }
