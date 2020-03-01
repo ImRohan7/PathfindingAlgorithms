@@ -24,7 +24,7 @@ GraphWithWeights make_example() {
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	GraphWithWeights grid = make_example();
+	/*GraphWithWeights grid = make_example();
 	Location start{ 1, 4 };
 	Location goal{ 8, 5 };
 	std::unordered_map<Location, Location> came_from;
@@ -36,7 +36,7 @@ void ofApp::setup() {
 	std::cout << '\n';
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
 	draw_grid(grid, 3, nullptr, nullptr, &path);
-
+*/
 	//auto a = heuristic_1(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
 	//auto b =heuristic_2(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
 	
@@ -73,12 +73,13 @@ void ofApp::setup() {
 		5, 40
 	};
 
-	auto nei = graf.getNeighbours('C');
-	std::unordered_map<Node, Node> came_fromm;
-	std::unordered_map<Node, double> cost_so_farr;
+	//auto nei = graf.getNeighbours('C');
+	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
+	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 //	std::unordered_map<Location, double> cost_so_far;
 
 	AAStar_search(graf, 'A', 'G', came_fromm, cost_so_farr);
+	
 	int aaa = 5;
 }
 
