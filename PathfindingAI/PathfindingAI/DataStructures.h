@@ -21,6 +21,7 @@ struct Node {
 	{
 		return  id == oth.id;
 	}
+
 };
 
 bool operator==(std::pair<Node, Node> a, pair<Node, Node> b)
@@ -56,12 +57,10 @@ struct NodeHash {
 };
 
 struct NodeEq {
-	bool operator()(const Node& a, const Node& b) const noexcept {
+	bool operator()(const Node& b, const Node& a) const noexcept {
 		return a.id == b.id;
 	}
 };
-
-
 
 
 struct Graph {
@@ -86,11 +85,6 @@ struct Graph {
 				return mCost[i];
 		}
 		return -1.0f;
-	}
-
-	bool operator==(Graph iOth)
-	{
-		return mLinks == iOth.mLinks;
 	}
 };
 
@@ -176,6 +170,10 @@ bool operator != (Location a, Location b) {
 
 bool operator < (Location a, Location b) {
 	return std::tie(a.x, a.y) < std::tie(b.x, b.y);
+}
+
+bool operator < (Node a, Node b) {
+	return (int)a.id < (int)b.id;
 }
 
 std::basic_iostream<char>::basic_ostream& operator<<(std::basic_iostream<char>::basic_ostream& out, const Location& loc) {

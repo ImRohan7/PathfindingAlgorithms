@@ -68,6 +68,15 @@ void Dijkstra_Search
 	}
 }
 
+void AAStar_search
+(Graph graph,
+	const Node& start,
+	const Node& goal,
+	std::unordered_map<Node, Node, NodeHash, NodeEq>& came_from,
+	std::unordered_map<Node, double, NodeHash, NodeEq>& cost_so_far)
+{
+	PriorityQueue<Node, double> container;
+	container.put(start, 0);
 
 //void AAStar_search
 //(Graph graph,
