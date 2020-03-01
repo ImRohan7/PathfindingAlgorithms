@@ -22,7 +22,7 @@ GraphWithWeights make_example() {
 	return grid;
 }
 
-// 2
+// 2 BASIC 
 void ExecuteBasicExample()
 {
 	Graph graf;
@@ -38,7 +38,6 @@ void ExecuteBasicExample()
 		{ {'B', 'G'}, 10.0f},
 		{ {'C', 'G'}, 8.0f},
 		{ {'G', 'G'}, 0.0f},
-
 	};
 
 	graf.mSinkCost = {
@@ -58,7 +57,7 @@ void ExecuteBasicExample()
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 
 	AStar_search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
-	//	Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
+		Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
 
 }
 
@@ -82,12 +81,20 @@ void ExecuteGridExample()
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	
+	ExecuteGridExample();
 	int aaa = 5;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+
+	// On click follow
+
+	// get click position
+	// get screen grid location
+	// pass as goal to graph
+	// get path and covert to screen space
+	// apply seek algo
 
 }
 
