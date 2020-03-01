@@ -3,7 +3,8 @@
 #include "../Algorithms.h"
 
 //----------
-// Example
+// Example setups
+// 1
 GraphWithWeights make_example() {
 	GraphWithWeights grid(10, 10);
 	add_rect(grid, 1, 7, 4, 9); // walls
@@ -21,39 +22,18 @@ GraphWithWeights make_example() {
 	return grid;
 }
 
-//--------------------------------------------------------------
-void ofApp::setup() {
-
-	/*GraphWithWeights grid = make_example();
-	Location start{ 1, 4 };
-	Location goal{ 8, 5 };
-	std::unordered_map<Location, Location> came_from;
-	std::unordered_map<Location, double> cost_so_far;
-	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
-	draw_grid(grid, 2, nullptr, &came_from);
-	std::cout << '\n';
-	draw_grid(grid, 3, &cost_so_far, nullptr);
-	std::cout << '\n';
-	std::vector<Location> path = reconstruct_path(start, goal, came_from);
-	draw_grid(grid, 3, nullptr, nullptr, &path);
-*/
-	//auto a = heuristic_1(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
-	//auto b =heuristic_2(GridLocation({ 1,1 }), GridLocation({ 6,2 }));
-	
-	Node a = Node('A');
-	Node b = Node('B');
-	Node c = Node('C');
-	Node g = Node('G');
-
+// 2
+void ExecuteBasicExample()
+{
 	Graph graf;
-	graf.mLinks = { 
-		 {a, {'B', 'C'}},
-		 {b, {'A', 'C', 'G'}},
-		 {c, {'A', 'B', 'G'}},
-		 {g, {'C', 'B'}},
+	graf.mLinks = {
+		 {'A', {'B', 'C'}},
+		 {'B', {'A', 'C', 'G'}},
+		 {'C', {'A', 'B', 'G'}},
+		 {'D', {'C', 'B'}},
 	};
 
-	graf.mHeuristic = { 
+	graf.mHeuristic = {
 		{ {'A', 'G'}, 20.0f},
 		{ {'B', 'G'}, 10.0f},
 		{ {'C', 'G'}, 8.0f},
@@ -74,15 +54,34 @@ void ofApp::setup() {
 		{ { 'G', 'B'}, 40 },
 	};
 
-
-	//auto nei = graf.getNeighbours('C');
 	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
-//	std::unordered_map<Location, double> cost_so_far;
 
-	double d = graf.getHueristic('B','G');
 	AStar_search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
-//	Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
+	//	Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
+
+}
+
+void ExecuteGridExample()
+{
+	GraphWithWeights grid = make_example();
+	Location start{ 1, 4 };
+	Location goal{ 8, 5 };
+	std::unordered_map<Location, Location> came_from;
+	std::unordered_map<Location, double> cost_so_far;
+	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
+	draw_grid(grid, 2, nullptr, &came_from);
+	std::cout << '\n';
+	draw_grid(grid, 3, &cost_so_far, nullptr);
+	std::cout << '\n';
+	std::vector<Location> path = reconstruct_path(start, goal, came_from);
+	draw_grid(grid, 3, nullptr, nullptr, &path);
+
+}
+
+//--------------------------------------------------------------
+void ofApp::setup() {
+
 	
 	int aaa = 5;
 }

@@ -24,8 +24,6 @@ double heuristic_2(Location a, Location b)
 	return z;
 }
 
-	
-
 
 // ================================================
 // =======	ALGORITHMS
