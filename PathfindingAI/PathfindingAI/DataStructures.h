@@ -8,6 +8,8 @@
 
 struct Location {
 	int x, y;
+	Location() {}
+	Location(int a, int b) : x(a), y(b) {}
 };
 
 struct Node {
@@ -17,8 +19,7 @@ struct Node {
 
 	Node(char c) : id(c) {}
 
-	bool operator==(const Node& oth)
-	{
+	bool operator==(const Node& oth) {
 		return  id == oth.id;
 	}
 
