@@ -40,13 +40,6 @@ namespace std {
 		}
 	};
 
-	/*template <> struct hash<Node> {
-		typedef Node argument_type;
-		typedef std::size_t result_type;
-		std::size_t operator()(const Node& id) const noexcept {
-			return std::hash<int>()(id.id ^ (id.id << 4));
-		}
-	};*/
 }
 
 
@@ -102,6 +95,45 @@ struct Graph {
 		std::pair<Node, Node> pr(from, to);
 		return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
 	}
+};
+
+// ============================
+struct intHasher {
+	size_t operator()(const pair<int, int>& node) const {
+		return hash<int>()(node.first << node.second);
+	}
+};
+
+struct intEqar {
+	bool operator()(const pair<int, int>& A, const pair<int, int>& B) const {
+		return A.first == B.first &&
+			A.second == B.second;
+	}
+};
+
+// large data graph
+struct GraphLargeData {
+
+	std::unordered_map<int, std::vector<int>> mLinks;
+	std::unordered_map<pair<int, int>, double, intHasher, intEqar> mSinkCost;
+	std::unordered_map<pair<int, int>, double, intHasher, intEqar> mHeuristic;
+
+	// get connectors
+	std::vector<int> getNeighbours(const int& iint) {
+		return mLinks[iint];
+	}
+
+	//// get Heuristic
+	//double getHueristic(const int& from, const int& to) {
+	//	std::pair<int, int> pr(from, to);
+	//	return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
+	//}
+
+	//// get cost
+	//double getCost(const int& from, const int& to) {
+	//	std::pair<int, int> pr(from, to);
+	//	return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
+	//}
 };
 
 // Priority Queue

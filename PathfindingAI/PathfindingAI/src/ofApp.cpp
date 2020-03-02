@@ -3,12 +3,11 @@
 #include "../Tools.h"
 #include "../Algorithms.h"
 #include <vector>
-
+#include <fstream>
+#include <string>
 // 
 namespace {
 	float s_Width = 700;
-	//float s_MarginLeftX = 10;
-	//float s_MarginTopY = 10;
 	//float s_CellSize = 70; // cell height and width
 	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
 	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
@@ -100,9 +99,9 @@ void ExecuteBasicExample()
 	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 
-	AStar_search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
+	AStar_search_1<Graph>(graf, 'A', 'G', came_fromm, cost_so_farr);
 		Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
-
+		int a = 6;
 }
 
 void ExecuteGridExample()
@@ -123,8 +122,28 @@ void ExecuteGridExample()
 
 }
 
+void ofApp::ParseLargeDataSet()
+{
+	string line;
+	GraphLargeData gLarge; // fill this values
+
+	ifstream myfile("DataSets/rome.txt");
+	if (myfile.is_open())
+	{
+		while (getline(myfile, line))
+		{
+			cout << line << '\n';
+		}
+		myfile.close();
+	}
+
+	else cout << "Unable to open file";
+}
+
 //--------------------------------------------------------------
 void ofApp::setup() {
+	ExecuteBasicExample();
+	ParseLargeDataSet();
 
 	//ExecuteGridExample();
 	int aaa = 5;

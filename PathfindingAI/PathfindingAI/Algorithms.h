@@ -28,8 +28,9 @@ double heuristic_2(Location a, Location b)
 // ================================================
 // =======	ALGORITHMS
 
+template <class Tgraf>
 void AStar_search_1
-(Graph graph,
+(Tgraf graph,
 	const Node& start,
 	const Node& goal,
 	std::unordered_map<Node, Node, NodeHash, NodeEq>& came_from,
@@ -37,39 +38,6 @@ void AStar_search_1
 {
 	PriorityQueue<Node, double> container;
 	container.put(start, 0);
-
-//void AAStar_search
-//(Graph graph,
-//	Node start,
-//	Node goal,
-//	std::unordered_map<Node, Node>& came_from,
-//	std::unordered_map<Node, double>& cost_so_far)
-//{
-//	PriorityQueue<Node, double> container;
-//	container.put(start, 0);
-//
-//	came_from[start] = start;
-//	cost_so_far[start] = 0;
-//
-//	while (!container.empty()) {
-//		Node current = container.get();
-//
-//		if (current == goal) {
-//			break;
-//		}
-//
-//		for (Node next : graph.getNeighbours(current)) {
-//			double new_cost = cost_so_far[current] + graph.getCost(current, next);
-//			if (cost_so_far.find(next) == cost_so_far.end()
-//				|| new_cost < cost_so_far[next]) {
-//				cost_so_far[next] = new_cost;
-//				double priority = new_cost;// +heuristic_1(next, goal);
-//				container.put(next, priority);
-//				came_from[next] = current;
-//			}
-//		}
-//	}
-//}
 
 	while (!container.empty()) {
 		Node current = container.get();
