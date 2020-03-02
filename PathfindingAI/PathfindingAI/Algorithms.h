@@ -24,51 +24,11 @@ double heuristic_2(Location a, Location b)
 	return z;
 }
 
-	
-
 
 // ================================================
 // =======	ALGORITHMS
 
-// Dijkstra template for any graph
-template<class AGraph, class ANode>
-void Dijkstra_Search
-(AGraph graph,
-	ANode start,
-	ANode goal,
-	std::unordered_map<ANode, ANode>& came_from,
-	std::unordered_map<ANode, double>& cost_so_far)
-{
-	PriorityQueue<ANode, double> container; // open list
-	container.put(start, 0);
-
-	// add start node into open list
-	came_from[start] = start; 
-	cost_so_far[start] = 0; // close list
-
-	while (!container.empty()) {
-		ANode current = container.get(); // get a new node and explore neightbours
-
-		if (current == goal) {
-			break;	// if we reached the goal already
-		}
-
-		for (ANode next : graph.getNeighbours(current)) {
-			// calculate cost
-			double new_cost = cost_so_far[current] + graph.getCost(current, next);
-			if (cost_so_far.find(next) == cost_so_far.end()
-				|| new_cost < cost_so_far[next]) {
-				// if it is not inside the closed list 
-				// OR the new cost is lower(if its already inside)
-				cost_so_far[next] = new_cost; // update / insert node with cost
-				came_from[next] = current;	// update path .. how we going to the next node
-				container.put(next, new_cost); // add the neighbour into open list to explore further
-			}
-		}
-	}
-}
-
-void AAStar_search
+void AStar_search_1
 (Graph graph,
 	const Node& start,
 	const Node& goal,
@@ -111,35 +71,58 @@ void AAStar_search
 //	}
 //}
 
-// A star
-void AStar_search
-(GraphWithWeights graph,
-	Location start,
-	Location goal,
-	std::unordered_map<Location, Location>& came_from,
-	std::unordered_map<Location, double>& cost_so_far)
-{
-	PriorityQueue<Location, double> container;
-	container.put(start, 0);
-
-	came_from[start] = start;
-	cost_so_far[start] = 0;
-
 	while (!container.empty()) {
-		Location current = container.get();
+		Node current = container.get();
 
 		if (current == goal) {
 			break;
 		}
 
-		for (Location next : graph.getNeighbours(current)) {
+		for (Node next : graph.getNeighbours(current)) {
 			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
 				cost_so_far[next] = new_cost;
-				double priority = new_cost + heuristic_1(next, goal);
+				double priority = new_cost + graph.getHueristic(next, goal);
 				container.put(next, priority);
 				came_from[next] = current;
+			}
+		}
+	}
+}
+
+// DijKstra
+void Dijkstra_Search_1
+(Graph graph,
+	const Node& start,
+	const Node& goal,
+	std::unordered_map<Node, Node, NodeHash, NodeEq>& came_from,
+	std::unordered_map<Node, double, NodeHash, NodeEq>& cost_so_far)
+{
+	PriorityQueue<Node, double> container; // open list
+	container.put(start, 0);
+
+	// add start node into open list
+	came_from[start] = start;
+	cost_so_far[start] = 0; // close list
+
+	while (!container.empty()) {
+		Node current = container.get(); // get a new node and explore neightbours
+
+		if (current == goal) {
+			break;	// if we reached the goal already
+		}
+
+		for (Node next : graph.getNeighbours(current)) {
+			// calculate cost
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
+			if (cost_so_far.find(next) == cost_so_far.end()
+				|| new_cost < cost_so_far[next]) {
+				// if it is not inside the closed list 
+				// OR the new cost is lower(if its already inside)
+				cost_so_far[next] = new_cost; // update / insert node with cost
+				came_from[next] = current;	// update path .. how we going to the next node
+				container.put(next, new_cost); // add the neighbour into open list to explore further
 			}
 		}
 	}
@@ -162,3 +145,40 @@ std::vector<Location> reconstruct_path(
 	return path;
 }
 
+// Dijkstra template for any graph
+template<class AGraph, class ANode>
+void Dijkstra_Search
+(AGraph graph,
+	ANode start,
+	ANode goal,
+	std::unordered_map<ANode, ANode>& came_from,
+	std::unordered_map<ANode, double>& cost_so_far)
+{
+	PriorityQueue<ANode, double> container; // open list
+	container.put(start, 0);
+
+	// add start node into open list
+	came_from[start] = start;
+	cost_so_far[start] = 0; // close list
+
+	while (!container.empty()) {
+		ANode current = container.get(); // get a new node and explore neightbours
+
+		if (current == goal) {
+			break;	// if we reached the goal already
+		}
+
+		for (ANode next : graph.getNeighbours(current)) {
+			// calculate cost
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
+			if (cost_so_far.find(next) == cost_so_far.end()
+				|| new_cost < cost_so_far[next]) {
+				// if it is not inside the closed list 
+				// OR the new cost is lower(if its already inside)
+				cost_so_far[next] = new_cost; // update / insert node with cost
+				came_from[next] = current;	// update path .. how we going to the next node
+				container.put(next, new_cost); // add the neighbour into open list to explore further
+			}
+		}
+	}
+}

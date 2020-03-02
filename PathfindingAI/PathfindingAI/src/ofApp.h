@@ -21,4 +21,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+		// Helpers
+		void DrawGrid();
+		void DrawCircleInCell(int x, int y);
 };

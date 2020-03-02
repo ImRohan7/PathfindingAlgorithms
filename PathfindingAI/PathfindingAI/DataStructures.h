@@ -8,6 +8,8 @@
 
 struct Location {
 	int x, y;
+	Location() {}
+	Location(int a, int b) : x(a), y(b) {}
 };
 
 struct Node {
@@ -17,8 +19,7 @@ struct Node {
 
 	Node(char c) : id(c) {}
 
-	bool operator==(const Node& oth)
-	{
+	bool operator==(const Node& oth) {
 		return  id == oth.id;
 	}
 
@@ -39,13 +40,13 @@ namespace std {
 		}
 	};
 
-	template <> struct hash<Node> {
+	/*template <> struct hash<Node> {
 		typedef Node argument_type;
 		typedef std::size_t result_type;
 		std::size_t operator()(const Node& id) const noexcept {
 			return std::hash<int>()(id.id ^ (id.id << 4));
 		}
-	};
+	};*/
 }
 
 
@@ -62,29 +63,44 @@ struct NodeEq {
 	}
 };
 
+struct NodeHasher {
+	size_t operator()(const pair<Node, Node>& node) const {
+		return hash<char>()(node.first.id);
+	}
+};
+
+struct NodeEqar {
+	bool operator()(const pair<Node, Node>& A, const pair<Node, Node>& B) const {
+		return A.first.id == B.first.id &&
+			A.second.id == B.second.id;
+	}
+};
 
 struct Graph {
 	
 	std::unordered_map<Node, std::vector<Node>, NodeHash, NodeEq> mLinks;
-	std::vector<pair<Node, Node>> mSinkPair;
-	std::vector<double> mCost;
+//	std::vector<pair<Node, Node>> mSinkPair; // pair
+//	std::vector<double> mCost; // cost
+	std::unordered_map<pair<Node, Node>,
+		double, NodeHasher, NodeEqar> mSinkCost;
+	std::unordered_map<pair<Node, Node>,
+		double, NodeHasher, NodeEqar> mHeuristic;
 
 	// get connectors
-	std::vector<Node> getNeighbours(const Node &iNode)
-	{
+	std::vector<Node> getNeighbours(const Node& iNode){
 		return mLinks[iNode];
 	}
 
-	double getCost(const Node &from, const Node &to)
-	{
+	// get Heuristic
+	double getHueristic(const Node& from, const Node& to){
 		std::pair<Node, Node> pr(from, to);
-		int ct = 0;
-		for (int i = 0; i < mSinkPair.size(); i++)
-		{
-			if (mSinkPair[i] == pr)
-				return mCost[i];
-		}
-		return -1.0f;
+		return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
+	}
+
+	// get cost
+	double getCost(const Node& from, const Node& to){
+		std::pair<Node, Node> pr(from, to);
+		return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
 	}
 };
 
@@ -109,8 +125,6 @@ struct PriorityQueue {
 		return best_item;
 	}
 };
-
-
 
 struct SquareGrid {
 	static std::array<Location, 4> mDirections; // four directions
