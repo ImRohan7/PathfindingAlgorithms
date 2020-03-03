@@ -1,6 +1,11 @@
 #pragma once
 
 #include "ofMain.h"
+struct GraphLargeData;
+
+/*
+
+*/
 
 class ofApp : public ofBaseApp{
 
@@ -24,5 +29,8 @@ class ofApp : public ofBaseApp{
 		// Helpers
 		void DrawGrid();
 		void DrawCircleInCell(int x, int y);
-		void ParseLargeDataSet();
+		GraphLargeData ParseLargeDataSet();
+
+		// Executers
+		void ExecuteLargeDataSets();
 };

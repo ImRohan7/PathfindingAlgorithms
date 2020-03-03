@@ -66,16 +66,31 @@ GraphWithWeights make_example() {
 }
 
 // 2 BASIC 
-void ExecuteBasicExample()
+void ExecuteFirstExample()
 {
 	Graph graf;
 	graf.mLinks = {
-		 {'A', {'B', 'C'}},
-		 {'B', {'A', 'C', 'G'}},
-		 {'C', {'A', 'B', 'G'}},
-		 {'D', {'C', 'B'}},
+		 {'S', {'L', 'O'} },
+		 {'L', {'E', 'S'} },
+		 {'O', {'S', 'C'} },
+		 {'E', {'L', 'W', 'P', 'B', 'C'} },
+		 {'W', {'E', 'P' } },
+		 {'P', {'W', 'E', 'G'} },
+		 {'C', {'E','O','U','Z'} },
+		 {'X', {'O', 'C', 'Z'} },
+		 {'J', {'X', 'R', 'V' } },
+		 {'V', {'J', 'F'} },
+		 {'Z', {'X', 'C', 'K', 'R'} },
+		 {'G', {'P', 'I'} },
+		 {'B', {'E','I','U'} },
+		 {'I', {'G','B','H'} },
+		 {'U', {'B', 'C', 'K', 'H'} },
+		 {'K', {'U', 'Z', 'R' , 'H'} },
+		 {'H', {'I', 'U', 'K', 'F'} },
+		 {'R', {'K', 'Z', 'J', 'F'} },
+		 {'F', {'R', 'V', 'H'} },
 	};
-
+	graf.isConstMode = true;
 	graf.mHeuristic = {
 		{ {'A', 'G'}, 20.0f},
 		{ {'B', 'G'}, 10.0f},
@@ -84,24 +99,50 @@ void ExecuteBasicExample()
 	};
 
 	graf.mSinkCost = {
-		{ { 'A', 'B'}, 20 },
-		{ { 'A', 'C'}, 40 },
-		{ { 'B', 'A'}, 20 },
-		{ { 'B', 'C'}, 10 },
-		{ { 'B', 'G'}, 40 },
-		{ { 'C', 'A'}, 40 },
-		{ { 'C', 'B'}, 10 },
-		{ { 'C', 'G'}, 5 },
-		{ { 'G', 'C'}, 5 },
-		{ { 'G', 'B'}, 40 },
+			{ { 'S', 'L'}, 6 }, // s
+			{ { 'S', 'O'}, 2 },
+			{ { 'O', 'C'}, 5 },
+			{ { 'L', 'E'}, 4 },
+			{ { 'E', 'W'}, 10},
+			{ { 'E', 'P'}, 15},
+			{ { 'W', 'P'}, 3 },
+			{ { 'P', 'G'}, 11},
+			{ { 'E', 'C'}, 7 },
+			{ { 'E', 'B'}, 10},
+			{ { 'O', 'X'}, 11},
+			{ { 'X', 'J'}, 9 },
+			{ { 'J', 'V'}, 5 },
+			{ { 'X', 'Z'}, 3 },
+			{ { 'C', 'Z'}, 8 },
+			{ { 'C', 'U'}, 15},
+			{ { 'G', 'I'}, 6 },
+			{ { 'B', 'I'}, 7 },
+			{ { 'I', 'H'}, 7 },
+			{ { 'U', 'H'}, 8 },
+			{ { 'K', 'H'}, 14},
+			{ { 'K', 'R'}, 8 },
+			{ { 'K', 'U'}, 8 },
+			{ { 'B', 'U'}, 17},
+			{ { 'H', 'F'}, 7 },
+			{ { 'R', 'F'}, 15},
+			{ { 'R', 'Z'}, 12},
+			{ { 'R', 'J'}, 3 },
+			{ { 'V', 'F'}, 2 },
+			{ { 'Z', 'K'}, 5 },
 	};
 
 	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 
-	AStar_search_1<Graph>(graf, 'A', 'G', came_fromm, cost_so_farr);
-		Dijkstra_Search_1(graf, 'A', 'G', came_fromm, cost_so_farr);
-		int a = 6;
+	Dijkstra_Search_1<Graph, Node, NodeHash, NodeEq>
+		(graf, 'L', 'F', came_fromm, cost_so_farr);
+
+	//AStar_search_1<Graph, Node, NodeHash, NodeEq>
+		//(graf, 'L', 'F', came_fromm, cost_so_farr);
+
+	std::vector<Node> path = reconstruct_path_1('L', 'F', came_fromm);
+
+	int a = 6;
 }
 
 void ExecuteGridExample()
@@ -122,7 +163,7 @@ void ExecuteGridExample()
 
 }
 
-void ofApp::ParseLargeDataSet()
+GraphLargeData ofApp::ParseLargeDataSet()
 {
 	string line;
 	string token;
@@ -131,7 +172,7 @@ void ofApp::ParseLargeDataSet()
 	int src = 0, sink = 0, cost = 0;
 	vector<int> fetcher;
 	std::stringstream stream("");
-	ifstream myfile("DataSets/rome.txt");
+	ifstream myfile("DataSets/NYC.txt");
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
@@ -163,12 +204,21 @@ void ofApp::ParseLargeDataSet()
 	}
 
 	else cout << "Unable to open file";
+
+	return gLarge;
 }
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	//ExecuteBasicExample();
-	ParseLargeDataSet();
+	
+
+	ExecuteFirstExample();
+	auto graflarge = ParseLargeDataSet();
+	std::unordered_map<int, int, std::hash<int>, intEq> came_fromm;
+	std::unordered_map<int, double, std::hash<int>, intEq> cost_so_farr;
+	Dijkstra_Search_1<GraphLargeData, int, std::hash<int>, intEq>
+		(graflarge, 1900, 219111, came_fromm, cost_so_farr);
+	
 
 	//ExecuteGridExample();
 	int aaa = 5;

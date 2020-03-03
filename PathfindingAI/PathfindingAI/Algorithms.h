@@ -28,25 +28,25 @@ double heuristic_2(Location a, Location b)
 // ================================================
 // =======	ALGORITHMS
 
-template <class Tgraf>
+template <class TGraph, class Point, class Hash, class Eq>
 void AStar_search_1
-(Tgraf graph,
-	const Node& start,
-	const Node& goal,
-	std::unordered_map<Node, Node, NodeHash, NodeEq>& came_from,
-	std::unordered_map<Node, double, NodeHash, NodeEq>& cost_so_far)
+(TGraph graph,
+	const Point& start,
+	const Point& goal,
+	std::unordered_map<Point, Point, Hash, Eq>& came_from,
+	std::unordered_map<Point, double, Hash, Eq>& cost_so_far)
 {
-	PriorityQueue<Node, double> container;
+	PriorityQueue<Point, double> container;
 	container.put(start, 0);
 
 	while (!container.empty()) {
-		Node current = container.get();
+		Point current = container.get();
 
 		if (current == goal) {
 			break;
 		}
 
-		for (Node next : graph.getNeighbours(current)) {
+		for (Point next : graph.getNeighbours(current)) {
 			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
@@ -60,14 +60,15 @@ void AStar_search_1
 }
 
 // DijKstra
+template <class TGraph, class Point, class Hash, class Eq>
 void Dijkstra_Search_1
-(Graph graph,
-	const Node& start,
-	const Node& goal,
-	std::unordered_map<Node, Node, NodeHash, NodeEq>& came_from,
-	std::unordered_map<Node, double, NodeHash, NodeEq>& cost_so_far)
+(TGraph graph,
+	const Point& start,
+	const Point& goal,
+	std::unordered_map<Point, Point, Hash, Eq>& came_from,
+	std::unordered_map<Point, double, Hash, Eq>& cost_so_far)
 {
-	PriorityQueue<Node, double> container; // open list
+	PriorityQueue<Point, double> container; // open list
 	container.put(start, 0);
 
 	// add start node into open list
@@ -75,13 +76,13 @@ void Dijkstra_Search_1
 	cost_so_far[start] = 0; // close list
 
 	while (!container.empty()) {
-		Node current = container.get(); // get a new node and explore neightbours
+		Point current = container.get(); // get a new node and explore neightbours
 
 		if (current == goal) {
 			break;	// if we reached the goal already
 		}
 
-		for (Node next : graph.getNeighbours(current)) {
+		for (Point next : graph.getNeighbours(current)) {
 			// calculate cost
 			double new_cost = cost_so_far[current] + graph.getCost(current, next);
 			if (cost_so_far.find(next) == cost_so_far.end()
@@ -105,6 +106,21 @@ std::vector<Location> reconstruct_path(
 	std::vector<Location> path;
 	Location current = goal;
 	while (current != start) {
+		path.push_back(current);
+		current = came_from[current];
+	}
+	path.push_back(start); // optional
+	std::reverse(path.begin(), path.end());
+	return path;
+}
+
+std::vector<Node> reconstruct_path_1(
+	Node start, Node goal,
+	std::unordered_map<Node, Node, NodeHash, NodeEq> came_from) 
+{
+	std::vector<Node> path;
+	Node current = goal;
+	while (current.id != start.id) {
 		path.push_back(current);
 		current = came_from[current];
 	}

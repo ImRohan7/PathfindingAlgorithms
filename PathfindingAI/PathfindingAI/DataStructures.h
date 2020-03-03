@@ -42,7 +42,8 @@ namespace std {
 
 }
 
-
+// ====================================
+// Custom Hash Functions
 
 struct NodeHash {
 	std::size_t operator()(const Node& id) const noexcept {
@@ -56,28 +57,48 @@ struct NodeEq {
 	}
 };
 
-struct NodeHasher {
+struct NodePairHash {
 	size_t operator()(const pair<Node, Node>& node) const {
 		return hash<char>()(node.first.id);
 	}
 };
 
-struct NodeEqar {
+struct NodePairEq {
 	bool operator()(const pair<Node, Node>& A, const pair<Node, Node>& B) const {
 		return A.first.id == B.first.id &&
 			A.second.id == B.second.id;
 	}
 };
 
+struct intEq {
+	bool operator()(const int& b, const int& a) const noexcept {
+		return a == b;
+	}
+};
+
+struct intPairHasher {
+	size_t operator()(const pair<int, int>& node) const {
+		return hash<int>()(node.first << node.second);
+	}
+};
+
+struct intPairEqar {
+	bool operator()(const pair<int, int>& A, const pair<int, int>& B) const {
+		return A.first == B.first &&
+			A.second == B.second;
+	}
+};
+// ============================
+
+
 struct Graph {
 	
 	std::unordered_map<Node, std::vector<Node>, NodeHash, NodeEq> mLinks;
-//	std::vector<pair<Node, Node>> mSinkPair; // pair
-//	std::vector<double> mCost; // cost
 	std::unordered_map<pair<Node, Node>,
-		double, NodeHasher, NodeEqar> mSinkCost;
+		double, NodePairHash, NodePairEq> mSinkCost;
 	std::unordered_map<pair<Node, Node>,
-		double, NodeHasher, NodeEqar> mHeuristic;
+		double, NodePairHash, NodePairEq> mHeuristic;
+	bool isConstMode = false; // const heuristic
 
 	// get connectors
 	std::vector<Node> getNeighbours(const Node& iNode){
@@ -86,37 +107,42 @@ struct Graph {
 
 	// get Heuristic
 	double getHueristic(const Node& from, const Node& to){
-		std::pair<Node, Node> pr(from, to);
-		return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
+		if (!isConstMode)
+		{
+			std::pair<Node, Node> pr(from, to);
+			std::pair<Node, Node> prInverse(to, from);
+			if (mHeuristic.find(pr) != mHeuristic.end())
+				return mHeuristic[pr];
+			else if (mHeuristic.find(prInverse) != mHeuristic.end())
+				return mHeuristic[prInverse]; // we check for both cases here
+			else
+				return -1;
+		}
+		else
+			return rand() % 14;
 	}
 
 	// get cost
 	double getCost(const Node& from, const Node& to){
 		std::pair<Node, Node> pr(from, to);
-		return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
+		std::pair<Node, Node> prInverse(to, from);
+		if (mSinkCost.find(pr) != mSinkCost.end())
+			return mSinkCost[pr];
+		else if (mSinkCost.find(prInverse) != mSinkCost.end())
+			return mSinkCost[prInverse]; // we check for both cases here
+		else
+			return -1;
 	}
 };
 
-// ============================
-struct intHasher {
-	size_t operator()(const pair<int, int>& node) const {
-		return hash<int>()(node.first << node.second);
-	}
-};
 
-struct intEqar {
-	bool operator()(const pair<int, int>& A, const pair<int, int>& B) const {
-		return A.first == B.first &&
-			A.second == B.second;
-	}
-};
 
 // large data graph
 struct GraphLargeData {
 
 	std::unordered_map<int, std::vector<int>> mLinks;
-	std::unordered_map<pair<int, int>, int, intHasher, intEqar> mSinkCost;
-	std::unordered_map<pair<int, int>, double, intHasher, intEqar> mHeuristic;
+	std::unordered_map<pair<int, int>, int, intPairHasher, intPairEqar> mSinkCost;
+	//std::unordered_map<pair<int, int>, double, intPairHasher, intPairEqar> mHeuristic;
 
 	// get connectors
 	std::vector<int> getNeighbours(const int& iint) {
@@ -125,14 +151,20 @@ struct GraphLargeData {
 
 	// get Heuristic
 	double getHueristic(const int& from, const int& to) {
-		std::pair<int, int> pr(from, to);
-		return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
+		int a = rand() % 200;
+		return a;
 	}
 
 	// get cost
 	double getCost(const int& from, const int& to) {
 		std::pair<int, int> pr(from, to);
-		return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
+		std::pair<int, int> prInverse(to, from);
+		if (mSinkCost.find(pr) != mSinkCost.end())
+			return mSinkCost[pr];
+		else if (mSinkCost.find(prInverse) != mSinkCost.end())
+			return mSinkCost[prInverse]; // we check for both cases here
+		else
+			return -1;
 	}
 };
 
@@ -291,6 +323,3 @@ void draw_grid(const AGraph& graph, int field_width,
 		std::cout << '\n';
 	}
 }
-
-
-
