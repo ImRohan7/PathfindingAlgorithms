@@ -115,7 +115,7 @@ struct intEqar {
 struct GraphLargeData {
 
 	std::unordered_map<int, std::vector<int>> mLinks;
-	std::unordered_map<pair<int, int>, double, intHasher, intEqar> mSinkCost;
+	std::unordered_map<pair<int, int>, int, intHasher, intEqar> mSinkCost;
 	std::unordered_map<pair<int, int>, double, intHasher, intEqar> mHeuristic;
 
 	// get connectors
@@ -123,17 +123,17 @@ struct GraphLargeData {
 		return mLinks[iint];
 	}
 
-	//// get Heuristic
-	//double getHueristic(const int& from, const int& to) {
-	//	std::pair<int, int> pr(from, to);
-	//	return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
-	//}
+	// get Heuristic
+	double getHueristic(const int& from, const int& to) {
+		std::pair<int, int> pr(from, to);
+		return mHeuristic.find(pr) != mHeuristic.end() ? mHeuristic[pr] : -1;
+	}
 
-	//// get cost
-	//double getCost(const int& from, const int& to) {
-	//	std::pair<int, int> pr(from, to);
-	//	return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
-	//}
+	// get cost
+	double getCost(const int& from, const int& to) {
+		std::pair<int, int> pr(from, to);
+		return mSinkCost.find(pr) != mSinkCost.end() ? mSinkCost[pr] : -1;
+	}
 };
 
 // Priority Queue

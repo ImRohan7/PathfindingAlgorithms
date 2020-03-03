@@ -125,14 +125,39 @@ void ExecuteGridExample()
 void ofApp::ParseLargeDataSet()
 {
 	string line;
+	string token;
 	GraphLargeData gLarge; // fill this values
-
+	// fetchers
+	int src = 0, sink = 0, cost = 0;
+	vector<int> fetcher;
+	std::stringstream stream("");
 	ifstream myfile("DataSets/rome.txt");
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
 		{
-			cout << line << '\n';
+			stream << line;
+			while (getline(stream, token, ' '))
+			{
+				fetcher.push_back(atoi(token.data()));
+			}
+			// exstract
+			src = fetcher[1];
+			sink = fetcher[2];
+			cost = fetcher[3];
+			fetcher.clear();
+			stream.clear();
+			if (gLarge.mLinks.find(src) != gLarge.mLinks.end())
+			{
+				// if already exist then enter the sink
+				gLarge.mLinks[src].push_back(sink);
+			}
+			else // if not then enter
+			{
+				gLarge.mLinks.insert({ src ,{ sink } });
+			}
+
+			gLarge.mSinkCost.insert({ {src, sink}, cost });
 		}
 		myfile.close();
 	}
@@ -142,7 +167,7 @@ void ofApp::ParseLargeDataSet()
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ExecuteBasicExample();
+	//ExecuteBasicExample();
 	ParseLargeDataSet();
 
 	//ExecuteGridExample();
