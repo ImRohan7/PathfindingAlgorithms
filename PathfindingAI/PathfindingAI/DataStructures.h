@@ -267,7 +267,7 @@ struct GraphWithWeights : SquareGrid {
 	
 	double getCost(Location from_node, Location to_node) const
 	{
-		return forests.find(to_node) != forests.end() ? 5 : 1;
+		return forests.find(to_node) != forests.end() ? 15 : 1;
 	}
 };
 

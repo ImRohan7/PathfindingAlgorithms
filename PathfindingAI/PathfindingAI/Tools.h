@@ -34,3 +34,12 @@ std::pair<int, int> getLocalizedOnScreenPosition(Location iLoc)
 
 	return result;
 }
+
+ofVec2f getAbsoluteObjectPosition(Location iLoc)
+{
+	ofVec2f result(1, 1);
+	result.x = (iLoc.x * s_CellSize) + s_MarginLeftX;
+	result.y = (iLoc.y * s_CellSize) + s_MarginTopY;
+	result += s_CellSize / 2;
+	return result;
+}

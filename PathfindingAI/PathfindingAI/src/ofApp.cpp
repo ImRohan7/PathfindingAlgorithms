@@ -5,6 +5,9 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include "../KinemSeek.h"
+#include "../AISystem.h"
+
 // 
 namespace {
 	float s_Width = 700;
@@ -13,20 +16,18 @@ namespace {
 	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
 	ofVec2f linePosHor(s_MarginLeftX + s_Width, s_MarginTopY );
 
-	std::vector<Location> s_circles;
+	std::vector<Location> s_Pathcircles;
 	std::vector<Location> s_Obstacles;
 	Location s_Goal;
-}
-// ====================================
-// helpers
+	Location s_Start({ 1,4 });
 
-std::pair<int, int> getClickGridPos(float x, float y)
-{	
-	std::pair<int, int> result(4, 4);
-	int xi = (x - s_MarginLeftX) / s_CellSize;
-	int yi = (y - s_MarginTopY) / s_CellSize;
-	std::cout << xi << " " << yi << endl;
-	return std::pair<int, int>(xi,yi);
+	// Kinematic seek 
+	physics::Kinematic lead; // leader
+	physics::Kinematic targt;
+	AI::KinemSeek seek;
+	physics::SteeringOutput steer;
+	std::vector<physics::Kinematic> followers; // for flocking
+	int s_curTarget = 0; // target to follow
 }
 
 // ====================================
@@ -42,12 +43,11 @@ GraphWithWeights make_example() {
 	// dense areas almost as obstacles
 	grid.forests = std::unordered_set<Location>{
 	  L{3, 4}, L{3, 5}, L{4, 1}, L{4, 2},
-	  L{4, 3}, L{4, 4}, L{4, 5}, L{4, 6},
-	  L{4, 7}, L{4, 8}, L{5, 1}, L{5, 2},
-	  L{5, 3}, L{5, 4}, L{5, 5}, L{5, 6},
-	  L{5, 7}, L{5, 8}, L{6, 2}, L{6, 3},
-	  L{6, 4}, L{6, 5}, L{6, 6}, L{6, 7},
-	  L{7, 3}, L{7, 4}, L{7, 5}
+	  L{4, 3},
+	 	  L{5, 3}, L{5, 5}, L{5, 6},
+	  L{5, 7}, L{6, 2}, L{6, 3},
+	  L{6, 6}, L{6, 7},
+	  L{7, 3}, L{7, 5}
 	};
 
 	std::unordered_set<Location>::iterator it = grid.forests.begin();
@@ -65,8 +65,8 @@ GraphWithWeights make_example() {
 	return grid;
 }
 
-// 2 BASIC 
-void ExecuteFirstExample()
+// 1 BASIC 
+void ofApp::ExecuteFirstExample()
 {
 	Graph graf;
 	graf.mLinks = {
@@ -145,24 +145,7 @@ void ExecuteFirstExample()
 	int a = 6;
 }
 
-void ExecuteGridExample()
-{
-	GraphWithWeights grid = make_example();
-	Location start{ 1, 4 };
-	Location goal = s_Goal;
-	std::unordered_map<Location, Location> came_from;
-	std::unordered_map<Location, double> cost_so_far;
-	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
-	draw_grid(grid, 2, nullptr, &came_from);
-	std::cout << '\n';
-	draw_grid(grid, 3, &cost_so_far, nullptr);
-	std::cout << '\n';
-	std::vector<Location> path = reconstruct_path(start, goal, came_from);
-	draw_grid(grid, 3, nullptr, nullptr, &path);
-	s_circles = path;
-
-}
-
+// 2 Large
 GraphLargeData ofApp::ParseLargeDataSet()
 {
 	string line;
@@ -208,51 +191,134 @@ GraphLargeData ofApp::ParseLargeDataSet()
 	return gLarge;
 }
 
-//--------------------------------------------------------------
-void ofApp::setup() {
-	
-
-	ExecuteFirstExample();
+void ofApp::ExecuteLargeDataSets()
+{
 	auto graflarge = ParseLargeDataSet();
 	std::unordered_map<int, int, std::hash<int>, intEq> came_fromm;
 	std::unordered_map<int, double, std::hash<int>, intEq> cost_so_farr;
 	Dijkstra_Search_1<GraphLargeData, int, std::hash<int>, intEq>
 		(graflarge, 1900, 219111, came_fromm, cost_so_farr);
-	
+}
 
-	//ExecuteGridExample();
-	int aaa = 5;
+// 3 Grid
+void ofApp::ExecuteGridExample()
+{
+	GraphWithWeights grid = make_example();
+	Location start = s_Start;
+	Location goal = s_Goal;
+	std::unordered_map<Location, Location> came_from;
+	std::unordered_map<Location, double> cost_so_far;
+	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
+	draw_grid(grid, 2, nullptr, &came_from);
+	std::cout << '\n';
+	draw_grid(grid, 3, &cost_so_far, nullptr);
+	std::cout << '\n';
+	std::vector<Location> path = reconstruct_path(start, goal, came_from);
+	draw_grid(grid, 3, nullptr, nullptr, &path);
+	s_Pathcircles = path;
+
+}
+
+// Helpers ==============
+void ResetCharacterForFollow()
+{
+	s_curTarget = 0;
+	
+	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
+	seek.mTarget.mPosition = getAbsoluteObjectPosition(s_Start);
+}
+
+//--------------------------------------------------------------
+void ofApp::setup() {
+	ExecuteGridExample();
+
+	// follow setup
+	lead.mPosition = getAbsoluteObjectPosition(s_Start);
+	lead.mVelocity = ofVec2f(0.5, 3);
+	targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
+	targt.mVelocity = ofVec2f(0, 0);
+	seek = AI::KinemSeek(lead, targt, 8.0f);
+	seek.mMaxAccel = 10;
+	seek.mSlowRadArrive = 25;
+	seek.mTargetRadArrive = 10;
+	seek.mTimeTotargetArrive = 0.4f;
+
+	ResetCharacterForFollow();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	// On click follow
+	// update target
+	if (seek.mSlowRadReached)
+	{
+		seek.mSlowRadReached = false;
+		// change target position
+		s_curTarget++;
+		if (s_curTarget >= s_Pathcircles.size())
+			s_curTarget--;
+		auto screenPos = getAbsoluteObjectPosition(s_Pathcircles[s_curTarget]);
+		seek.mTarget.mPosition = screenPos;
+	}
 
-	// get click position
-	// get screen grid location
-	// pass as goal to graph
-	// get path and covert to screen space
-	// apply seek algo
-	
+	// follow
+	steer = seek.getSteeringForArrival();
+	float tOr = atan2(seek.mCharacter.mVelocity.y, seek.mCharacter.mVelocity.x);
+	steer.mAngular = AISystem::getSteeringFor_Align(
+		tOr, seek.mCharacter.mOrientation,
+		1.5, 0.3f, 2.5).mAngular;
+	std::cout <<"tOr: "<< tOr<<endl;
+	seek.mCharacter.update(steer, ofGetLastFrameTime()); // update
+
 
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	// Grid Stuff
 	ofSetColor(200, 0, 0);
 	DrawGrid();
 
-	for(auto s: s_circles)
+	for(auto s: s_Pathcircles)
 		DrawCircleInCell(s.x, s.y);
 
 	ofSetColor(200, 200, 150);
 	for (auto s : s_Obstacles)
 		DrawCircleInCell(s.x, s.y);
 
+
+	// follow stuff
+	ofSetColor(250, 0, 150);
+	ofNoFill();
+	//ofDrawCircle(seek.mTarget.mPosition, seek.mSlowRadArrive); // slow rad
+	//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
+	ofFill();
+	//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
+	ofDrawLine(seek.mCharacter.mPosition, seek.mCharacter.mPosition + 10 * steer.mLinear);
+
+	drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation);
+
 }
 
 // Helpers
+// rotat and draw BOid with triangle
+void ofApp::drawBoid(ofVec2f pos, float ori)
+{
+	// translate
+	ofTranslate(pos);
+	// rotate
+	ofRotateZRad(ori); // rotate
+	// draw
+	ofSetColor(250, 0, 150);
+	ofDrawCircle(ofVec2f(0, 0), 8);
+	ofSetColor(150, 200, 0);
+	ofDrawTriangle(ofVec2f(10, -20), ofVec2f(10, 20), ofVec2f(30, 0));
+	// reverse rotate
+	ofRotateZRad(-ori); // rotate
+	// translate back
+	ofTranslate(-pos);
+
+}
 
 // Draw a 10X10 Grid square
 void ofApp::DrawGrid()
@@ -269,8 +335,8 @@ void ofApp::DrawGrid()
 void ofApp::DrawCircleInCell(int x, int y)
 {
 	auto pos = getLocalizedOnScreenPosition({ x,y });
-	ofVec2f p(pos.first, pos.second);
-	ofDrawCircle(p + s_CellSize/2, 30.0f);
+	ofVec2f po(pos.first, pos.second);
+	ofDrawCircle(po + s_CellSize/2, 30.0f);
 }
 
 //--------------------------------------------------------------
@@ -298,6 +364,8 @@ void ofApp::mousePressed(int x, int y, int button){
 	auto loc = getQuanizedLocation(x, y);
 	s_Goal = loc;
 	ExecuteGridExample();
+	// reset
+	ResetCharacterForFollow();
 	//s_circles.push_back(loc);
 }
 

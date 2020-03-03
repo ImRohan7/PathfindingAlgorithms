@@ -30,7 +30,10 @@ class ofApp : public ofBaseApp{
 		void DrawGrid();
 		void DrawCircleInCell(int x, int y);
 		GraphLargeData ParseLargeDataSet();
+		void drawBoid(ofVec2f pos, float ori);
 
 		// Executers
 		void ExecuteLargeDataSets();
+		void ExecuteFirstExample();
+		void ExecuteGridExample();
 };

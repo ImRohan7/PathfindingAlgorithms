@@ -7,6 +7,15 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="AISystem.cpp">
+      <Filter>src\Movements</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinematic.cpp">
+      <Filter>src\Movements</Filter>
+    </ClCompile>
+    <ClCompile Include="KinemSeek.cpp">
+      <Filter>src\Movements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -14,6 +23,9 @@
     </Filter>
     <Filter Include="addons">
       <UniqueIdentifier>{c7826d18-f96b-4246-930e-1ab3107c29c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Movements">
+      <UniqueIdentifier>{060ee097-6e47-41a7-8bb6-14df97adc618}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,6 +40,15 @@
     </ClInclude>
     <ClInclude Include="Tools.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="AISystem.h">
+      <Filter>src\Movements</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinematic.h">
+      <Filter>src\Movements</Filter>
+    </ClInclude>
+    <ClInclude Include="KinemSeek.h">
+      <Filter>src\Movements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
