@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 struct GraphLargeData;
-
+struct Location;
 /*
 
 */
@@ -31,9 +31,12 @@ class ofApp : public ofBaseApp{
 		void DrawCircleInCell(int x, int y);
 		GraphLargeData ParseLargeDataSet();
 		void drawBoid(ofVec2f pos, float ori);
+		void addForest(Location L);
+
 
 		// Executers
 		void ExecuteLargeDataSets();
 		void ExecuteCampusMap();
 		void ExecuteGridExample();
+
 };

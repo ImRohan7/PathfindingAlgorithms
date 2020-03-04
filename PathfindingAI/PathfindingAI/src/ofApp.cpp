@@ -10,9 +10,13 @@
 
 namespace {
 	// select one: A star or Djkstra
-	AlgoType s_AlgoType = AlgoType::DjKstra;
+	AlgoType s_AlgoType = AlgoType::AStar;
 	// select the Vesrion
 	AlgoVersion s_AlgoVersion = AlgoVersion::InteractiveGrid;
+
+
+	// for grid
+	GraphWithWeights s_Grid(1,1);
 
 	float s_Width = 700;
 	//float s_CellSize = 70; // cell height and width
@@ -40,9 +44,9 @@ namespace {
 //----------
 // Example setups
 // 1
-GraphWithWeights make_example() {
+GraphWithWeights createGridGraph() {
 	GraphWithWeights grid(10, 10);
-	add_rect(grid, 1, 7, 4, 9); // walls
+	//add_rect(grid, 1, 7, 4, 9); // walls
 	typedef Location L;
 	// dense areas almost as obstacles
 	grid.forests = std::unordered_set<Location>{
@@ -218,16 +222,16 @@ void ofApp::ExecuteLargeDataSets()
 // 3 Grid
 void ofApp::ExecuteGridExample()
 {
-	GraphWithWeights grid = make_example();
+	//GraphWithWeights grid = make_example();
 	Location start = getQuanizedLocation(
 		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
 	Location goal = s_Goal;
 	std::unordered_map<Location, Location> came_from;
 	std::unordered_map<Location, double> cost_so_far;
 	if(s_AlgoType == AlgoType::DjKstra)
-		Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
+		Dijkstra_Search(s_Grid, start, goal, came_from, cost_so_far);
 	else
-		a_star_search(grid, start, goal, came_from, cost_so_far);
+		a_star_search(s_Grid, start, goal, came_from, cost_so_far);
 		
 	//draw_grid(grid, 2, nullptr, &came_from);
 	//std::cout << '\n';
@@ -249,6 +253,21 @@ void ResetCharacterForFollow()
 	seek.mTarget.mPosition = seek.mCharacter.mPosition;
 }
 
+// add forest
+void ofApp::addForest(Location l)
+{
+	// check if already there
+	if (s_Grid.forests.find(l) != s_Grid.forests.end())
+	{
+		s_Grid.forests.erase(s_Grid.forests.find(l));
+	}
+	else
+	{
+		s_Grid.forests.insert(l);
+	}
+	
+}
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 
@@ -264,6 +283,7 @@ void ofApp::setup() {
 	
 	case AlgoVersion::InteractiveGrid:
 		// follow setup
+		s_Grid = createGridGraph();
 		ExecuteGridExample();
 		lead.mPosition = getAbsoluteObjectPosition(s_Start);
 		lead.mVelocity = ofVec2f(0.5, 3);
@@ -326,7 +346,7 @@ void ofApp::draw(){
 			DrawCircleInCell(s.x, s.y);
 
 		ofSetColor(200, 200, 150);
-		for (auto s : s_Obstacles)
+		for (auto s : s_Grid.forests)
 			DrawCircleInCell(s.x, s.y);
 
 
@@ -389,11 +409,20 @@ void ofApp::mousePressed(int x, int y, int button) {
 	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
 	{
 		auto loc = getQuanizedLocation(x, y);
-		s_Goal = loc;
-		ExecuteGridExample();
-		// reset
-		ResetCharacterForFollow();
-		//s_circles.push_back(loc);
+		if (button == 2) // right click
+		{
+			// add forest
+			addForest(loc);
+		}
+		else
+		{
+			s_Goal = loc;
+			ExecuteGridExample();
+			// reset
+			ResetCharacterForFollow();
+			//s_circles.push_back(loc);
+
+		}
 	}
 }
 

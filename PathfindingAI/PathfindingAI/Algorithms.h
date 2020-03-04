@@ -193,7 +193,7 @@ void a_star_search
 			if (cost_so_far.find(next) == cost_so_far.end()
 				|| new_cost < cost_so_far[next]) {
 				cost_so_far[next] = new_cost;
-				double priority = new_cost + heuristic_1(next, goal);
+				double priority = new_cost + heuristic_2(next, goal);
 				container.put(next, priority);
 				came_from[next] = current;
 			}
