@@ -99,7 +99,7 @@ struct Graph {
 	std::unordered_map<pair<Node, Node>,
 		double, NodePairHash, NodePairEq> mHeuristic;
 	bool isConstMode = false; // const heuristic
-
+	int mRandomRange = 15;
 	// get connectors
 	std::vector<Node> getNeighbours(const Node& iNode){
 		return mLinks[iNode];
@@ -119,7 +119,7 @@ struct Graph {
 				return -1;
 		}
 		else
-			return rand() % 14;
+			return rand() % mRandomRange;
 	}
 
 	// get cost

@@ -6,6 +6,20 @@
 >> Quantization
 >> Localization
 */
+
+// the version to run
+enum AlgoVersion{
+	CampusMap,
+	BigDataMap,
+	InteractiveGrid,
+};
+
+// the type of algo to run
+enum AlgoType {
+	DjKstra,
+	AStar,
+};
+
 namespace {
 
 	float s_MarginLeftX = 10;
@@ -35,6 +49,7 @@ std::pair<int, int> getLocalizedOnScreenPosition(Location iLoc)
 	return result;
 }
 
+// get Absolute vec for on screen
 ofVec2f getAbsoluteObjectPosition(Location iLoc)
 {
 	ofVec2f result(1, 1);

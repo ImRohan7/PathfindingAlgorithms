@@ -34,6 +34,6 @@ class ofApp : public ofBaseApp{
 
 		// Executers
 		void ExecuteLargeDataSets();
-		void ExecuteFirstExample();
+		void ExecuteCampusMap();
 		void ExecuteGridExample();
 };

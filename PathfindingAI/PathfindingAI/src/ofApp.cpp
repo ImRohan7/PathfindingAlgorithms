@@ -8,8 +8,12 @@
 #include "../KinemSeek.h"
 #include "../AISystem.h"
 
-// 
 namespace {
+	// select one: A star or Djkstra
+	AlgoType s_AlgoType = AlgoType::DjKstra;
+	// select the Vesrion
+	AlgoVersion s_AlgoVersion = AlgoVersion::InteractiveGrid;
+
 	float s_Width = 700;
 	//float s_CellSize = 70; // cell height and width
 	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
@@ -49,7 +53,7 @@ GraphWithWeights make_example() {
 	  L{6, 6}, L{6, 7},
 	  L{7, 3}, L{7, 5}
 	};
-
+	
 	std::unordered_set<Location>::iterator it = grid.forests.begin();
 	while (it != grid.forests.end())
 	{
@@ -66,7 +70,7 @@ GraphWithWeights make_example() {
 }
 
 // 1 BASIC 
-void ofApp::ExecuteFirstExample()
+void ofApp::ExecuteCampusMap()
 {
 	Graph graf;
 	graf.mLinks = {
@@ -91,11 +95,9 @@ void ofApp::ExecuteFirstExample()
 		 {'F', {'R', 'V', 'H'} },
 	};
 	graf.isConstMode = true;
+	graf.mRandomRange = 14;
 	graf.mHeuristic = {
-		{ {'A', 'G'}, 20.0f},
-		{ {'B', 'G'}, 10.0f},
-		{ {'C', 'G'}, 8.0f},
-		{ {'G', 'G'}, 0.0f},
+		// it is random in range
 	};
 
 	graf.mSinkCost = {
@@ -134,15 +136,23 @@ void ofApp::ExecuteFirstExample()
 	std::unordered_map<Node, Node, NodeHash, NodeEq> came_fromm;
 	std::unordered_map<Node, double, NodeHash, NodeEq> cost_so_farr;
 
-	Dijkstra_Search_1<Graph, Node, NodeHash, NodeEq>
-		(graf, 'L', 'F', came_fromm, cost_so_farr);
-
-	//AStar_search_1<Graph, Node, NodeHash, NodeEq>
-		//(graf, 'L', 'F', came_fromm, cost_so_farr);
-
+	if (s_AlgoType == AlgoType::DjKstra)
+	{
+		Dijkstra_Search_1<Graph, Node, NodeHash, NodeEq>
+			(graf, 'L', 'F', came_fromm, cost_so_farr);
+	}
+	else
+	{
+		AStar_search_1<Graph, Node, NodeHash, NodeEq>
+			(graf, 'L', 'F', came_fromm, cost_so_farr);
+	}
+	// construct and print path
 	std::vector<Node> path = reconstruct_path_1('L', 'F', came_fromm);
-
-	int a = 6;
+	cout << "Path:\n";
+	for (auto p : path)
+	{
+		std::cout<< p.id << " -> ";
+	}
 }
 
 // 2 Large
@@ -155,7 +165,7 @@ GraphLargeData ofApp::ParseLargeDataSet()
 	int src = 0, sink = 0, cost = 0;
 	vector<int> fetcher;
 	std::stringstream stream("");
-	ifstream myfile("DataSets/NYC.txt");
+	ifstream myfile("DataSets/rome.txt");
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
@@ -194,27 +204,37 @@ GraphLargeData ofApp::ParseLargeDataSet()
 void ofApp::ExecuteLargeDataSets()
 {
 	auto graflarge = ParseLargeDataSet();
+	
 	std::unordered_map<int, int, std::hash<int>, intEq> came_fromm;
 	std::unordered_map<int, double, std::hash<int>, intEq> cost_so_farr;
+	
 	Dijkstra_Search_1<GraphLargeData, int, std::hash<int>, intEq>
 		(graflarge, 1900, 219111, came_fromm, cost_so_farr);
+
+	//AStar_search_1<GraphLargeData, int, std::hash<int>, intEq>
+	//	(graflarge, 1900, 219111, came_fromm, cost_so_farr);
 }
 
 // 3 Grid
 void ofApp::ExecuteGridExample()
 {
 	GraphWithWeights grid = make_example();
-	Location start = s_Start;
+	Location start = getQuanizedLocation(
+		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
 	Location goal = s_Goal;
 	std::unordered_map<Location, Location> came_from;
 	std::unordered_map<Location, double> cost_so_far;
-	Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
-	draw_grid(grid, 2, nullptr, &came_from);
-	std::cout << '\n';
-	draw_grid(grid, 3, &cost_so_far, nullptr);
-	std::cout << '\n';
+	if(s_AlgoType == AlgoType::DjKstra)
+		Dijkstra_Search(grid, start, goal, came_from, cost_so_far);
+	else
+		a_star_search(grid, start, goal, came_from, cost_so_far);
+		
+	//draw_grid(grid, 2, nullptr, &came_from);
+	//std::cout << '\n';
+	//draw_grid(grid, 3, &cost_so_far, nullptr);
+	//std::cout << '\n';
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
-	draw_grid(grid, 3, nullptr, nullptr, &path);
+	//draw_grid(grid, 3, nullptr, nullptr, &path);
 	s_Pathcircles = path;
 
 }
@@ -224,80 +244,103 @@ void ResetCharacterForFollow()
 {
 	s_curTarget = 0;
 	
-	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
-	seek.mTarget.mPosition = getAbsoluteObjectPosition(s_Start);
+	seek.mCharacter.mVelocity = ofVec2f(0,0);
+//	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
+	seek.mTarget.mPosition = seek.mCharacter.mPosition;
 }
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ExecuteGridExample();
 
-	// follow setup
-	lead.mPosition = getAbsoluteObjectPosition(s_Start);
-	lead.mVelocity = ofVec2f(0.5, 3);
-	targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
-	targt.mVelocity = ofVec2f(0, 0);
-	seek = AI::KinemSeek(lead, targt, 8.0f);
-	seek.mMaxAccel = 10;
-	seek.mSlowRadArrive = 25;
-	seek.mTargetRadArrive = 10;
-	seek.mTimeTotargetArrive = 0.4f;
+	switch (s_AlgoVersion)
+	{
+	case AlgoVersion::BigDataMap:
+		ExecuteLargeDataSets();
+		break;
 
-	ResetCharacterForFollow();
+	case AlgoVersion::CampusMap:
+		ExecuteCampusMap();
+		break;
+	
+	case AlgoVersion::InteractiveGrid:
+		// follow setup
+		ExecuteGridExample();
+		lead.mPosition = getAbsoluteObjectPosition(s_Start);
+		lead.mVelocity = ofVec2f(0.5, 3);
+		targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
+		targt.mVelocity = ofVec2f(0, 0);
+		seek = AI::KinemSeek(lead, targt, 8.0f);
+		seek.mMaxAccel = 10;
+		seek.mSlowRadArrive = 25;
+		seek.mTargetRadArrive = 10;
+		seek.mTimeTotargetArrive = 0.4f;
+
+		ResetCharacterForFollow();
+		break;
+
+	default:
+		break;
+	}
+
+
+	
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
 	// update target
-	if (seek.mSlowRadReached)
+	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
 	{
-		seek.mSlowRadReached = false;
-		// change target position
-		s_curTarget++;
-		if (s_curTarget >= s_Pathcircles.size())
-			s_curTarget--;
-		auto screenPos = getAbsoluteObjectPosition(s_Pathcircles[s_curTarget]);
-		seek.mTarget.mPosition = screenPos;
+		if (seek.mSlowRadReached)
+		{
+			seek.mSlowRadReached = false;
+			// change target position
+			s_curTarget++;
+			if (s_curTarget >= s_Pathcircles.size())
+				s_curTarget--;
+			auto screenPos = getAbsoluteObjectPosition(s_Pathcircles[s_curTarget]);
+			seek.mTarget.mPosition = screenPos;
+		}
+
+		//  get steering and update 
+		steer = seek.getSteeringForArrival();
+		float tOr = atan2(seek.mCharacter.mVelocity.y, seek.mCharacter.mVelocity.x);
+		steer.mAngular = AISystem::getSteeringFor_Align(
+			tOr, seek.mCharacter.mOrientation,
+			1.5, 0.3f, 2.5).mAngular;
+		seek.mCharacter.update(steer, ofGetLastFrameTime()); // update 
 	}
-
-	// follow
-	steer = seek.getSteeringForArrival();
-	float tOr = atan2(seek.mCharacter.mVelocity.y, seek.mCharacter.mVelocity.x);
-	steer.mAngular = AISystem::getSteeringFor_Align(
-		tOr, seek.mCharacter.mOrientation,
-		1.5, 0.3f, 2.5).mAngular;
-	std::cout <<"tOr: "<< tOr<<endl;
-	seek.mCharacter.update(steer, ofGetLastFrameTime()); // update
-
 
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	// Grid Stuff
-	ofSetColor(200, 0, 0);
-	DrawGrid();
+	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
+	{
+		ofSetColor(200, 0, 0);
+		DrawGrid();
 
-	for(auto s: s_Pathcircles)
-		DrawCircleInCell(s.x, s.y);
+		for (auto s : s_Pathcircles)
+			DrawCircleInCell(s.x, s.y);
 
-	ofSetColor(200, 200, 150);
-	for (auto s : s_Obstacles)
-		DrawCircleInCell(s.x, s.y);
+		ofSetColor(200, 200, 150);
+		for (auto s : s_Obstacles)
+			DrawCircleInCell(s.x, s.y);
 
 
-	// follow stuff
-	ofSetColor(250, 0, 150);
-	ofNoFill();
-	//ofDrawCircle(seek.mTarget.mPosition, seek.mSlowRadArrive); // slow rad
-	//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
-	ofFill();
-	//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
-	ofDrawLine(seek.mCharacter.mPosition, seek.mCharacter.mPosition + 10 * steer.mLinear);
+		// follow stuff
+		ofSetColor(250, 0, 150);
+		ofNoFill();
+		//ofDrawCircle(seek.mTarget.mPosition, seek.mSlowRadArrive); // slow rad
+		//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
+		ofFill();
+		//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
+		ofDrawLine(seek.mCharacter.mPosition, seek.mCharacter.mPosition + 10 * steer.mLinear); // acceleration line
 
-	drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation);
-
+		drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation);
+	}
 }
 
 // Helpers
@@ -339,6 +382,21 @@ void ofApp::DrawCircleInCell(int x, int y)
 	ofDrawCircle(po + s_CellSize/2, 30.0f);
 }
 
+//--------------------------------------------------------
+// MOUSE PRESSED
+//--------------------------------------------------------------
+void ofApp::mousePressed(int x, int y, int button) {
+	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
+	{
+		auto loc = getQuanizedLocation(x, y);
+		s_Goal = loc;
+		ExecuteGridExample();
+		// reset
+		ResetCharacterForFollow();
+		//s_circles.push_back(loc);
+	}
+}
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
@@ -357,16 +415,6 @@ void ofApp::mouseMoved(int x, int y ){
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
 
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-	auto loc = getQuanizedLocation(x, y);
-	s_Goal = loc;
-	ExecuteGridExample();
-	// reset
-	ResetCharacterForFollow();
-	//s_circles.push_back(loc);
 }
 
 //--------------------------------------------------------------

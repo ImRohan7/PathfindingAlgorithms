@@ -129,7 +129,7 @@ std::vector<Node> reconstruct_path_1(
 	return path;
 }
 
-// Dijkstra template for any graph
+// Dijkstra for grid
 template<class AGraph, class ANode>
 void Dijkstra_Search
 (AGraph graph,
@@ -162,6 +162,40 @@ void Dijkstra_Search
 				cost_so_far[next] = new_cost; // update / insert node with cost
 				came_from[next] = current;	// update path .. how we going to the next node
 				container.put(next, new_cost); // add the neighbour into open list to explore further
+			}
+		}
+	}
+}
+
+// AStar Grid
+void a_star_search
+(GraphWithWeights graph,
+	Location start,
+	Location goal,
+	std::unordered_map<Location, Location>& came_from, // close list
+	std::unordered_map<Location, double>& cost_so_far)
+{
+	PriorityQueue<Location, double> container; // open list
+	container.put(start, 0);
+
+	came_from[start] = start;
+	cost_so_far[start] = 0;
+
+	while (!container.empty()) {
+		Location current = container.get();
+
+		if (current == goal) {
+			break;
+		}
+
+		for (Location next : graph.getNeighbours(current)) {
+			double new_cost = cost_so_far[current] + graph.getCost(current, next);
+			if (cost_so_far.find(next) == cost_so_far.end()
+				|| new_cost < cost_so_far[next]) {
+				cost_so_far[next] = new_cost;
+				double priority = new_cost + heuristic_1(next, goal);
+				container.put(next, priority);
+				came_from[next] = current;
 			}
 		}
 	}
