@@ -10,9 +10,9 @@
 
 namespace {
 	// select one: A star or Djkstra
-	AlgoType s_AlgoType = AlgoType::AStar;
+	AlgoType s_AlgoType = AlgoType::DjKstra;
 	// select the Vesrion
-	AlgoVersion s_AlgoVersion = AlgoVersion::InteractiveGrid;
+	AlgoVersion s_AlgoVersion = AlgoVersion::BigDataMap;
 
 
 	// for grid
@@ -76,6 +76,7 @@ GraphWithWeights createGridGraph() {
 // 1 BASIC 
 void ofApp::ExecuteCampusMap()
 {
+	Node start = 'L', goal = 'H';
 	Graph graf;
 	graf.mLinks = {
 		 {'S', {'L', 'O'} },
@@ -99,7 +100,7 @@ void ofApp::ExecuteCampusMap()
 		 {'F', {'R', 'V', 'H'} },
 	};
 	graf.isConstMode = true;
-	graf.mRandomRange = 14;
+	graf.mRandomRange = 20;
 	graf.mHeuristic = {
 		// it is random in range
 	};
@@ -110,28 +111,28 @@ void ofApp::ExecuteCampusMap()
 			{ { 'O', 'C'}, 5 },
 			{ { 'L', 'E'}, 4 },
 			{ { 'E', 'W'}, 10},
-			{ { 'E', 'P'}, 15},
+			{ { 'E', 'P'}, 11},
 			{ { 'W', 'P'}, 3 },
 			{ { 'P', 'G'}, 11},
 			{ { 'E', 'C'}, 7 },
-			{ { 'E', 'B'}, 10},
-			{ { 'O', 'X'}, 11},
+			{ { 'E', 'B'}, 8},
+			{ { 'O', 'X'}, 5},
 			{ { 'X', 'J'}, 9 },
 			{ { 'J', 'V'}, 5 },
 			{ { 'X', 'Z'}, 3 },
 			{ { 'C', 'Z'}, 8 },
-			{ { 'C', 'U'}, 15},
+			{ { 'C', 'U'}, 10},
 			{ { 'G', 'I'}, 6 },
 			{ { 'B', 'I'}, 7 },
 			{ { 'I', 'H'}, 7 },
 			{ { 'U', 'H'}, 8 },
-			{ { 'K', 'H'}, 14},
-			{ { 'K', 'R'}, 8 },
+			{ { 'K', 'H'}, 4 },
+			{ { 'K', 'R'}, 6 },
 			{ { 'K', 'U'}, 8 },
-			{ { 'B', 'U'}, 17},
+			{ { 'B', 'U'}, 3 },
 			{ { 'H', 'F'}, 7 },
-			{ { 'R', 'F'}, 15},
-			{ { 'R', 'Z'}, 12},
+			{ { 'R', 'F'}, 5 },
+			{ { 'R', 'Z'}, 9 },
 			{ { 'R', 'J'}, 3 },
 			{ { 'V', 'F'}, 2 },
 			{ { 'Z', 'K'}, 5 },
@@ -143,15 +144,15 @@ void ofApp::ExecuteCampusMap()
 	if (s_AlgoType == AlgoType::DjKstra)
 	{
 		Dijkstra_Search_1<Graph, Node, NodeHash, NodeEq>
-			(graf, 'L', 'F', came_fromm, cost_so_farr);
+			(graf, start, goal, came_fromm, cost_so_farr);
 	}
 	else
 	{
 		AStar_search_1<Graph, Node, NodeHash, NodeEq>
-			(graf, 'L', 'F', came_fromm, cost_so_farr);
+			(graf, start, goal, came_fromm, cost_so_farr);
 	}
 	// construct and print path
-	std::vector<Node> path = reconstruct_path_1('L', 'F', came_fromm);
+	std::vector<Node> path = reconstruct_path_1(start, goal, came_fromm);
 	cout << "Path:\n";
 	for (auto p : path)
 	{
@@ -169,7 +170,7 @@ GraphLargeData ofApp::ParseLargeDataSet()
 	int src = 0, sink = 0, cost = 0;
 	vector<int> fetcher;
 	std::stringstream stream("");
-	ifstream myfile("DataSets/rome.txt");
+	ifstream myfile("DataSets/NYC.txt");
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
@@ -208,15 +209,19 @@ GraphLargeData ofApp::ParseLargeDataSet()
 void ofApp::ExecuteLargeDataSets()
 {
 	auto graflarge = ParseLargeDataSet();
-	
+
 	std::unordered_map<int, int, std::hash<int>, intEq> came_fromm;
 	std::unordered_map<int, double, std::hash<int>, intEq> cost_so_farr;
-	
-	Dijkstra_Search_1<GraphLargeData, int, std::hash<int>, intEq>
-		(graflarge, 1900, 219111, came_fromm, cost_so_farr);
 
-	//AStar_search_1<GraphLargeData, int, std::hash<int>, intEq>
-	//	(graflarge, 1900, 219111, came_fromm, cost_so_farr);
+	if (s_AlgoType == AlgoType::DjKstra)
+	{
+		Dijkstra_Search_1<GraphLargeData, int, std::hash<int>, intEq>
+			(graflarge, 1900, 219111, came_fromm, cost_so_farr);
+	}
+	else {
+		AStar_search_1<GraphLargeData, int, std::hash<int>, intEq>
+			(graflarge, 1900, 219111, came_fromm, cost_so_farr);
+	}
 }
 
 // 3 Grid
@@ -302,8 +307,6 @@ void ofApp::setup() {
 		break;
 	}
 
-
-	
 }
 
 //--------------------------------------------------------------
