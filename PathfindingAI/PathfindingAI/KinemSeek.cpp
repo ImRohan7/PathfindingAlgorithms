@@ -1,7 +1,7 @@
 #include "KinemSeek.h"
 #include <random>
 
-#define MaxRotation 3.0f // max rotation velocity
+#define MaxRotation 5.0f // max rotation velocity
 
 // for no arrival
 physics::SteeringOutput AI::KinemSeek::getSteering()

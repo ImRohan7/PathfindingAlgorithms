@@ -1,6 +1,6 @@
 #include "Kinematic.h"
 
-#define MaxVel 4
+#define MaxVel 2
 
 namespace physics {
 

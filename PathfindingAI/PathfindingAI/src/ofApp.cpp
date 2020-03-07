@@ -10,9 +10,9 @@
 
 namespace {
 	// select one: A star or Djkstra
-	AlgoType s_AlgoType = AlgoType::DjKstra;
+	AlgoType s_AlgoType = AlgoType::AStar;
 	// select the Vesrion
-	AlgoVersion s_AlgoVersion = AlgoVersion::BigDataMap;
+	AlgoVersion s_AlgoVersion = AlgoVersion::InteractiveGrid;
 
 
 	// for grid
@@ -170,7 +170,7 @@ GraphLargeData ofApp::ParseLargeDataSet()
 	int src = 0, sink = 0, cost = 0;
 	vector<int> fetcher;
 	std::stringstream stream("");
-	ifstream myfile("DataSets/NYC.txt");
+	ifstream myfile("DataSets/rome.txt");
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
@@ -295,7 +295,8 @@ void ofApp::setup() {
 		targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
 		targt.mVelocity = ofVec2f(0, 0);
 		seek = AI::KinemSeek(lead, targt, 8.0f);
-		seek.mMaxAccel = 10;
+		seek.mMaxAccel = 6;
+		seek.mMaxSpeed = 6;
 		seek.mSlowRadArrive = 25;
 		seek.mTargetRadArrive = 10;
 		seek.mTimeTotargetArrive = 0.4f;
@@ -345,10 +346,20 @@ void ofApp::draw(){
 		ofSetColor(200, 0, 0);
 		DrawGrid();
 
+		ofSetColor(83, 228, 250); // Yellow circles path
 		for (auto s : s_Pathcircles)
 			DrawCircleInCell(s.x, s.y);
+		
+		ofSetColor(10, 223, 60); // Green circles First
+		DrawCircleInCell(s_Pathcircles[0].x, s_Pathcircles[0].y);
 
-		ofSetColor(200, 200, 150);
+		auto size = s_Pathcircles.size();
+		ofSetColor(0, 0, 250); // Blue Goal
+		DrawCircleInCell(
+			s_Pathcircles[size-1].x,
+			s_Pathcircles[size-1].y );
+
+		ofSetColor(240, 0, 0);
 		for (auto s : s_Grid.forests)
 			DrawCircleInCell(s.x, s.y);
 

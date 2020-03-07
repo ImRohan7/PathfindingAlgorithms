@@ -129,6 +129,21 @@ std::vector<Node> reconstruct_path_1(
 	return path;
 }
 
+std::vector<int> reconstruct_path_2(
+	int start, int goal,
+	std::unordered_map<int, int, std::hash<int>, intEq> came_from)
+{
+	std::vector<int> path;
+	int current = goal;
+	while (current != start) {
+		path.push_back(current);
+		current = came_from[current];
+	}
+	path.push_back(start); // optional
+	std::reverse(path.begin(), path.end());
+	return path;
+}
+
 // Dijkstra for grid
 template<class AGraph, class ANode>
 void Dijkstra_Search
