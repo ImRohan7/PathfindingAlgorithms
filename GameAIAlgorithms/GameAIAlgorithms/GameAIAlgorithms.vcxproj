@@ -186,6 +186,7 @@
     <ClInclude Include="AISystem.h" />
     <ClInclude Include="Algorithms.h" />
     <ClInclude Include="DataStructures.h" />
+    <ClInclude Include="DTree.h" />
     <ClInclude Include="Kinematic.h" />
     <ClInclude Include="KinemSeek.h" />
     <ClInclude Include="src\ofApp.h" />

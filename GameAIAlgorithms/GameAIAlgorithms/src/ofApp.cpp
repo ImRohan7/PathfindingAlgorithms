@@ -7,6 +7,7 @@
 #include <string>
 #include "../KinemSeek.h"
 #include "../AISystem.h"
+#include "../DTree.h"
 
 namespace {
 	// select one: A star or Djkstra
@@ -275,6 +276,17 @@ void ofApp::addForest(Location l)
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+
+	Decision* A = new Decision();
+	Decision* B = new Decision();
+	Decision* C = new Decision();
+	C->val = 88;
+	C->IsAction = true;
+
+	A->True = B;
+	A->False = C;
+
+	auto d = A->makeADecision();
 
 	switch (s_AlgoVersion)
 	{
