@@ -4,12 +4,15 @@
 // SM: State Machines
 namespace SM {
 
+	// Forward Declaration
+	class State;
 
 	class Action {
 
 		virtual void Perform();
 
 	};
+
 
 	// += for actions
 	std::vector<Action*> operator+=(std::vector<Action*> a, std::vector<Action*> b)
@@ -21,25 +24,8 @@ namespace SM {
 		return a;
 	}
 
-	class State {
-	
-	public:
-
-		// Getters
-		inline std::vector<Action*> getActions() { return m_Actions; }
-		inline std::vector<Action*> getEntryActions() { return m_EntryActions; }
-		inline std::vector<Action*> getExitActions() { m_ExitActions; }
-		inline std::vector<Transition*> getTransitions() { m_Transitions; }
-		
-	private:
-		std::vector<Action*> m_Actions;
-		std::vector<Action*> m_EntryActions;
-		std::vector<Action*> m_ExitActions;
-		std::vector<Transition*> m_Transitions;
-	};
-
 	class Condition {
-	
+
 	public:
 
 		bool Test()
@@ -50,15 +36,15 @@ namespace SM {
 	};
 
 	class Transition {
-	
+
 	public:
 
 		bool IsTriggered() { return m_Condition->Test(); }
-		
+
 		// Getters
-		inline State* getTargetState() { return m_TargetState;  }
+		inline State* getTargetState() { return m_TargetState; }
 		inline std::vector<Action*>  getActions() { return m_Actions; }
-			
+
 
 	private:
 		std::vector<Action*> m_Actions;
@@ -66,11 +52,25 @@ namespace SM {
 		Condition* m_Condition;
 	};
 
+	class State {
+	
+	public:
+
+		// Getters
+		inline std::vector<Action*> getActions() { return m_Actions; }
+		inline std::vector<Action*> getEntryActions() { return m_EntryActions; }
+		inline std::vector<Action*> getExitActions() { return m_ExitActions; }
+		inline std::vector<Transition*> getTransitions() { return m_Transitions; }
+		
+	private:
+		std::vector<Action*> m_Actions;
+		std::vector<Action*> m_EntryActions;
+		std::vector<Action*> m_ExitActions;
+		std::vector<Transition*> m_Transitions;
+	};
+
 
 	
-
-
-
 
 	class StateMachine {
 

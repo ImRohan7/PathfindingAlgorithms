@@ -33,9 +33,6 @@ public:
 	Decision* makeADecision()
 	{
 		Decision* b = getBranch();
-		if (b->IsAction)
-			return b;
-		else
-			return b->makeADecision();
+		return (b->IsAction) ? b : b->makeADecision();
 	}
 };

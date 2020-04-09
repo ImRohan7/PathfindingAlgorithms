@@ -16,6 +16,9 @@
     <ClCompile Include="KinemSeek.cpp">
       <Filter>src\Movements</Filter>
     </ClCompile>
+    <ClCompile Include="Decision Making\StateMachines.cpp">
+      <Filter>src\Decision Making</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -30,7 +33,7 @@
     <Filter Include="src\PathFinding">
       <UniqueIdentifier>{2c91d3f8-53ce-4425-b9d7-d2b6c31b18d0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Decision Tree">
+    <Filter Include="src\Decision Making">
       <UniqueIdentifier>{6607006c-f675-405c-a9da-361275ef8abc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -57,7 +60,10 @@
       <Filter>src\PathFinding</Filter>
     </ClInclude>
     <ClInclude Include="DTree.h">
-      <Filter>src\Decision Tree</Filter>
+      <Filter>src\Decision Making</Filter>
+    </ClInclude>
+    <ClInclude Include="Decision Making\StateMachines.h">
+      <Filter>src\Decision Making</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
