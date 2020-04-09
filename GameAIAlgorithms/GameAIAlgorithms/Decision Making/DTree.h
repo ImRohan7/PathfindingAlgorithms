@@ -1,28 +1,22 @@
 #pragma once
 
-
 class Decision{
-	// or I can store an action pointer here instead of storing it as a whole
+
 public:
-	bool IsAction = false;
-	float val = 0.0f;
-	Decision* True;
-	Decision* False;
-	float mintest;
-	float Maxtest;
-
-	float getCharacterVelocity();
-
+	
 	// run tests and retunr the decision
-	Decision* getBranch()
-	{
-		// srite the logic
-		return False;
-	}
+	virtual Decision* getBranch();
 
 	Decision* makeADecision()
 	{
 		Decision* b = getBranch();
-		return (b->IsAction) ? b : b->makeADecision();
+		return (b->m_HasAction) ? b : b->makeADecision();
 	}
+
+public:
+	bool m_HasAction = false;
+	float mSpeed;
+	float mAccel;
+	Decision* m_BranchTrue;
+	Decision* m_BranchFalse;
 };

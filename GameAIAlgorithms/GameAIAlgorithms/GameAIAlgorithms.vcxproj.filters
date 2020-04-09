@@ -59,13 +59,16 @@
     <ClInclude Include="Tools.h">
       <Filter>src\PathFinding</Filter>
     </ClInclude>
-    <ClInclude Include="DTree.h">
-      <Filter>src\Decision Making</Filter>
-    </ClInclude>
     <ClInclude Include="Decision Making\StateMachines.h">
       <Filter>src\Decision Making</Filter>
     </ClInclude>
     <ClInclude Include="Decision Making\BehaviorTrees.h">
+      <Filter>src\Decision Making</Filter>
+    </ClInclude>
+    <ClInclude Include="Decision Making\CustomDecisions.h">
+      <Filter>src\Decision Making</Filter>
+    </ClInclude>
+    <ClInclude Include="Decision Making\DTree.h">
       <Filter>src\Decision Making</Filter>
     </ClInclude>
   </ItemGroup>

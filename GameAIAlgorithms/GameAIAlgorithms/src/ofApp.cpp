@@ -7,7 +7,8 @@
 #include <string>
 #include "../KinemSeek.h"
 #include "../AISystem.h"
-#include "../DTree.h"
+#include "../Decision Making/DTree.h"
+#include "../Decision Making/CustomDecisions.h"
 
 namespace {
 	// select one: A star or Djkstra
@@ -285,13 +286,12 @@ void ofApp::addForest(Location l)
 // choose target and speed
 void ofApp::MakeDecision_ChooseTarget()
 {
-	// get two targets paths
-
 	// create Graph
-	Decision* A = new Decision();
-	Decision* B = new Decision();
-	Decision* C = new Decision();
 
+	// get two targets paths
+	ChooseAlgo Algo;
+	ChooseSpeed Left;
+	ChooseSpeed Right;
 }
 
 //--------------------------------------------------------------
@@ -301,7 +301,7 @@ void ofApp::setup() {
 	Decision* B = new Decision();
 	Decision* C = new Decision();
 	C->val = 88;
-	C->IsAction = true;
+	C->m_HasAction = true;
 
 	A->True = B;
 	A->False = C;
