@@ -21,10 +21,14 @@ enum AlgoType {
 };
 
 namespace {
+	
+	// intended screen width for drawing measurement
+	float s_Width = 740; 
 
+	float s_boxPerLine = 20;
 	float s_MarginLeftX = 10;
 	float s_MarginTopY = 10;
-	float s_CellSize = 70; // cell height and width
+	float s_CellSize = 37; // cell height and width
 
 }
 // TILE Based conversion

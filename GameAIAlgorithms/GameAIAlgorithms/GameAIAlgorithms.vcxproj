@@ -187,6 +187,7 @@
     <ClInclude Include="AISystem.h" />
     <ClInclude Include="Algorithms.h" />
     <ClInclude Include="DataStructures.h" />
+    <ClInclude Include="Decision Making\BehaviorTrees.h" />
     <ClInclude Include="Decision Making\StateMachines.h" />
     <ClInclude Include="DTree.h" />
     <ClInclude Include="Kinematic.h" />

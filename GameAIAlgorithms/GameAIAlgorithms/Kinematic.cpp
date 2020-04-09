@@ -1,7 +1,5 @@
 #include "Kinematic.h"
 
-#define MaxVel 2
-
 namespace physics {
 
 	void Kinematic::update(SteeringOutput iSteering, float iElapsedTime)
@@ -11,10 +9,10 @@ namespace physics {
 	//	mOrientation += mRotaionvel * iElapsedTime;
 
 		mVelocity += iSteering.mLinear * iElapsedTime;
-		if (mVelocity.x > MaxVel)	mVelocity.x = MaxVel;
-		if (mVelocity.x < -MaxVel)	mVelocity.x = -MaxVel;
-		if (mVelocity.y > MaxVel)	mVelocity.y = MaxVel;
-		if (mVelocity.y < -MaxVel)	mVelocity.y = -MaxVel;
+		if (mVelocity.x > mMaxVel)	mVelocity.x = mMaxVel;
+		if (mVelocity.x < -mMaxVel)	mVelocity.x = -mMaxVel;
+		if (mVelocity.y > mMaxVel)	mVelocity.y = mMaxVel;
+		if (mVelocity.y < -mMaxVel)	mVelocity.y = -mMaxVel;
 
 		mOrientation += iSteering.mAngular * iElapsedTime*2;
 	}

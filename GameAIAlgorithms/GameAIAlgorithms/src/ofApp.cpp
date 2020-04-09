@@ -18,8 +18,7 @@ namespace {
 
 	// for grid
 	GraphWithWeights s_Grid(1,1);
-
-	float s_Width = 700;
+	
 	//float s_CellSize = 70; // cell height and width
 	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
 	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
@@ -37,6 +36,10 @@ namespace {
 	physics::SteeringOutput steer;
 	std::vector<physics::Kinematic> followers; // for flocking
 	int s_curTarget = 0; // target to follow
+
+	// Decision Making variables
+	float s_MaxVel = 2; // 3
+	float s_MaxAcceleration = 6; // 12
 }
 
 // ====================================
@@ -46,7 +49,7 @@ namespace {
 // Example setups
 // 1
 GraphWithWeights createGridGraph() {
-	GraphWithWeights grid(10, 10);
+	GraphWithWeights grid(20, 20);
 	//add_rect(grid, 1, 7, 4, 9); // walls
 	typedef Location L;
 	// dense areas almost as obstacles
@@ -54,9 +57,14 @@ GraphWithWeights createGridGraph() {
 	  L{3, 4}, L{3, 5}, L{4, 1}, L{4, 2},
 	  L{4, 3},
 	 	  L{5, 3}, L{5, 5}, L{5, 6},
-	  L{5, 7}, L{6, 2}, L{6, 3},
-	  L{6, 6}, L{6, 7},
-	  L{7, 3}, L{7, 5}
+	  L{5, 7}, L{6, 12}, L{6, 3},
+	  L{16, 6}, L{6, 7},
+	  L{7, 3}, L{7, 5},
+	   L{14, 3},
+		  L{5, 3}, L{15, 15}, L{15, 16},
+	  L{15, 7}, L{16, 12}, L{16, 13},
+	  L{16, 1}, L{16, 17},
+	  L{7, 19}, L{17, 15}
 	};
 	
 	std::unordered_set<Location>::iterator it = grid.forests.begin();
@@ -274,6 +282,18 @@ void ofApp::addForest(Location l)
 	
 }
 
+// choose target and speed
+void ofApp::MakeDecision_ChooseTarget()
+{
+	// get two targets paths
+
+	// create Graph
+	Decision* A = new Decision();
+	Decision* B = new Decision();
+	Decision* C = new Decision();
+
+}
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 
@@ -307,7 +327,8 @@ void ofApp::setup() {
 		targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
 		targt.mVelocity = ofVec2f(0, 0);
 		seek = AI::KinemSeek(lead, targt, 8.0f);
-		seek.mMaxAccel = 6;
+		seek.mCharacter.mMaxVel = s_MaxVel;
+		seek.mMaxAccel = s_MaxAcceleration;
 		seek.mMaxSpeed = 6;
 		seek.mSlowRadArrive = 25;
 		seek.mTargetRadArrive = 10;
@@ -385,23 +406,24 @@ void ofApp::draw(){
 		//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
 		ofDrawLine(seek.mCharacter.mPosition, seek.mCharacter.mPosition + 10 * steer.mLinear); // acceleration line
 
-		drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation);
+		drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation,
+			ofColor(250, 0, 150));
 	}
 }
 
 // Helpers
 // rotat and draw BOid with triangle
-void ofApp::drawBoid(ofVec2f pos, float ori)
+void ofApp::drawBoid(ofVec2f &pos, float &ori, ofColor &clr)
 {
 	// translate
 	ofTranslate(pos);
 	// rotate
 	ofRotateZRad(ori); // rotate
 	// draw
-	ofSetColor(250, 0, 150);
-	ofDrawCircle(ofVec2f(0, 0), 8);
+	ofSetColor(clr);
+	ofDrawCircle(ofVec2f(0, 0), 10);
 	ofSetColor(150, 200, 0);
-	ofDrawTriangle(ofVec2f(10, -20), ofVec2f(10, 20), ofVec2f(30, 0));
+	ofDrawTriangle(ofVec2f(5, -10), ofVec2f(5, 10), ofVec2f(15, 0));
 	// reverse rotate
 	ofRotateZRad(-ori); // rotate
 	// translate back
@@ -413,7 +435,7 @@ void ofApp::drawBoid(ofVec2f pos, float ori)
 void ofApp::DrawGrid()
 {
 	int offset = 0;
-	for (int i = 0; i < 11; i++)
+	for (int i = 0; i < s_boxPerLine+1; i++)
 	{
 		ofDrawLine(linePos1 + ofVec2f(offset,0), linePosVert + ofVec2f(offset,0));
 		ofDrawLine(linePos1 + ofVec2f(0, offset), linePosHor + ofVec2f(0, offset));
@@ -425,7 +447,7 @@ void ofApp::DrawCircleInCell(int x, int y)
 {
 	auto pos = getLocalizedOnScreenPosition({ x,y });
 	ofVec2f po(pos.first, pos.second);
-	ofDrawCircle(po + s_CellSize/2, 30.0f);
+	ofDrawCircle(po + s_CellSize/2, 15.0f);
 }
 
 //--------------------------------------------------------

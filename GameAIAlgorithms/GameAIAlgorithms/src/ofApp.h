@@ -30,7 +30,7 @@ class ofApp : public ofBaseApp{
 		void DrawGrid();
 		void DrawCircleInCell(int x, int y);
 		GraphLargeData ParseLargeDataSet();
-		void drawBoid(ofVec2f pos, float ori);
+		void drawBoid(ofVec2f &pos, float &ori, ofColor &clr);
 		void addForest(Location L);
 
 
@@ -39,4 +39,6 @@ class ofApp : public ofBaseApp{
 		void ExecuteCampusMap();
 		void ExecuteGridExample();
 
+		// Decision making
+		void MakeDecision_ChooseTarget();
 };

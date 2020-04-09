@@ -65,6 +65,9 @@
     <ClInclude Include="Decision Making\StateMachines.h">
       <Filter>src\Decision Making</Filter>
     </ClInclude>
+    <ClInclude Include="Decision Making\BehaviorTrees.h">
+      <Filter>src\Decision Making</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

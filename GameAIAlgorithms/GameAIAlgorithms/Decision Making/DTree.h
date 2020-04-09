@@ -1,16 +1,6 @@
 #pragma once
 
 
-struct TreeNode {
-
-public:
-	float val;
-	TreeNode* True;
-	TreeNode* False;
-
-
-};
-
 class Decision{
 	// or I can store an action pointer here instead of storing it as a whole
 public:
