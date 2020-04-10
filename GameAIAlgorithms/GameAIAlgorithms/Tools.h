@@ -7,6 +7,11 @@
 >> Localization
 */
 
+enum DecisionAlgoType
+{
+	DecisionTree,
+};
+
 // the version to run
 enum AlgoVersion{
 	CampusMap,

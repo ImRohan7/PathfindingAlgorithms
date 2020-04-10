@@ -40,5 +40,6 @@ class ofApp : public ofBaseApp{
 		void ExecuteGridExample();
 
 		// Decision making
+		void RunDecisionTree();
 		void MakeDecision_ChooseTarget();
 };

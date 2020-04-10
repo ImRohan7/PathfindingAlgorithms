@@ -27,7 +27,7 @@ namespace {
 
 	std::vector<Location> s_Pathcircles;
 	std::vector<Location> s_Obstacles;
-	Location s_Goal;
+	Location s_GoalA, s_GoalB;
 	Location s_Start({ 1,4 });
 
 	// Kinematic seek 
@@ -41,6 +41,7 @@ namespace {
 	// Decision Making variables
 	float s_MaxVel = 2; // 3
 	float s_MaxAcceleration = 6; // 12
+	int s_ClickCounter = 0;
 }
 
 // ====================================
@@ -240,7 +241,7 @@ void ofApp::ExecuteGridExample()
 	//GraphWithWeights grid = make_example();
 	Location start = getQuanizedLocation(
 		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
-	Location goal = s_Goal;
+	Location goal = s_GoalA;
 	std::unordered_map<Location, Location> came_from;
 	std::unordered_map<Location, double> cost_so_far;
 	if(s_AlgoType == AlgoType::DjKstra)
@@ -257,6 +258,34 @@ void ofApp::ExecuteGridExample()
 	s_Pathcircles = path;
 
 }
+
+// decision making
+void ofApp::RunDecisionTree()
+{
+	// running two algos
+	Location start = getQuanizedLocation(
+		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
+	Location goalA = s_GoalA;
+	Location goalB = s_GoalB;
+	std::unordered_map<Location, Location> came_from;
+	std::unordered_map<Location, double> cost_so_far;
+	
+	a_star_search(s_Grid, start, goalA, came_from, cost_so_far);
+	a_star_search(s_Grid, start, goalB, came_from, cost_so_far);
+	
+	std::vector<Location> pathA = reconstruct_path(start, goalA, came_from);
+	std::vector<Location> pathB = reconstruct_path(start, goalB, came_from);
+
+	int sizeA = pathA.size();
+	int sizeB = pathB.size();
+
+	
+	// Decision Trees
+
+
+	s_Pathcircles = pathA;
+}
+
 
 // Helpers ==============
 void ResetCharacterForFollow()
@@ -453,24 +482,31 @@ void ofApp::DrawCircleInCell(int x, int y)
 //--------------------------------------------------------
 // MOUSE PRESSED
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
+void ofApp::mousePressed(int x, int y, int button)
+{
+	auto loc = getQuanizedLocation(x, y);
+	
+	if (button == 2) // right click add forest
+	{
+		addForest(loc);
+	}
+	else
+	{
+		s_ClickCounter++;
+		if (s_ClickCounter == 1)
+			s_GoalA = loc;
+		if (s_ClickCounter == 2)
+		{
+			s_GoalB = loc;
+			s_ClickCounter = 0;
+
+			RunDecisionTree();
+			ResetCharacterForFollow(); // reset
+			//s_circles.push_back(loc);
+		}
+	}
 	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
 	{
-		auto loc = getQuanizedLocation(x, y);
-		if (button == 2) // right click
-		{
-			// add forest
-			addForest(loc);
-		}
-		else
-		{
-			s_Goal = loc;
-			ExecuteGridExample();
-			// reset
-			ResetCharacterForFollow();
-			//s_circles.push_back(loc);
-
-		}
 	}
 }
 
