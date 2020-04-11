@@ -4,8 +4,10 @@ class Decision{
 
 public:
 	
+
+
 	// run tests and retunr the decision
-	virtual Decision* getBranch();
+	virtual Decision* getBranch() { return nullptr; }
 
 	Decision* makeADecision()
 	{
@@ -15,8 +17,8 @@ public:
 
 public:
 	bool m_HasAction = false;
-	float mSpeed;
-	float mAccel;
-	Decision* m_BranchTrue;
-	Decision* m_BranchFalse;
+	float mVel = 0;
+	float mAccel = 0;
+	Decision* m_BranchTrue = nullptr;
+	Decision* m_BranchFalse = nullptr;
 };

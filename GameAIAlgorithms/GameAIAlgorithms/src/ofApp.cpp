@@ -33,7 +33,7 @@ namespace {
 	// Kinematic seek 
 	physics::Kinematic lead; // leader
 	physics::Kinematic targt;
-	AI::KinemSeek seek;
+	AI::KinemSeek seekA;
 	physics::SteeringOutput steer;
 	std::vector<physics::Kinematic> followers; // for flocking
 	int s_curTarget = 0; // target to follow
@@ -240,7 +240,7 @@ void ofApp::ExecuteGridExample()
 {
 	//GraphWithWeights grid = make_example();
 	Location start = getQuanizedLocation(
-		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
+		seekA.mCharacter.mPosition.x, seekA.mCharacter.mPosition.y);
 	Location goal = s_GoalA;
 	std::unordered_map<Location, Location> came_from;
 	std::unordered_map<Location, double> cost_so_far;
@@ -264,26 +264,57 @@ void ofApp::RunDecisionTree()
 {
 	// running two algos
 	Location start = getQuanizedLocation(
-		seek.mCharacter.mPosition.x, seek.mCharacter.mPosition.y);
+		seekA.mCharacter.mPosition.x, seekA.mCharacter.mPosition.y);
 	Location goalA = s_GoalA;
 	Location goalB = s_GoalB;
-	std::unordered_map<Location, Location> came_from;
-	std::unordered_map<Location, double> cost_so_far;
+	std::unordered_map<Location, Location> came_fromA;
+	std::unordered_map<Location, Location> came_fromB;
+	std::unordered_map<Location, double> cost_so_farA;
+	std::unordered_map<Location, double> cost_so_farB;
 	
-	a_star_search(s_Grid, start, goalA, came_from, cost_so_far);
-	a_star_search(s_Grid, start, goalB, came_from, cost_so_far);
+	a_star_search(s_Grid, start, goalA, came_fromA, cost_so_farA);
+	a_star_search(s_Grid, start, goalB, came_fromB, cost_so_farB);
 	
-	std::vector<Location> pathA = reconstruct_path(start, goalA, came_from);
-	std::vector<Location> pathB = reconstruct_path(start, goalB, came_from);
+	std::vector<Location> pathA = reconstruct_path(start, goalA, came_fromA);
+	std::vector<Location> pathB = reconstruct_path(start, goalB, came_fromB);
 
+	// ==========================
+	// variables
 	int sizeA = pathA.size();
 	int sizeB = pathB.size();
 
+	float DistA = heuristic_2(start, goalA);
+	float DistB = heuristic_2(start, goalB);
 	
 	// Decision Trees
+	ChooseAlgo* A1 = new ChooseAlgo(sizeA,sizeB);
+	ChooseSpeed* BT = new ChooseSpeed(DistA, 10); // true node
+	ChooseSpeed* BF = new ChooseSpeed(DistB, 10); // false node
+	Decision* DT = new Decision();
+	Decision* DF = new Decision();
+	DT->m_HasAction = true;
+	DT->mVel = 2;
+	DT->mAccel = 6;
+	
+	DF->m_HasAction = true;
+	DF->mVel = 4;
+	DF->mAccel = 15;
 
+	A1->m_BranchTrue = BT;
+	A1->m_BranchFalse = BF;
+	BT->m_BranchTrue = DT;
+	BT->m_BranchFalse = DF;
+	BF->m_BranchTrue = DT;
+	BF->m_BranchFalse = DF;
 
-	s_Pathcircles = pathA;
+	Decision* D = A1->makeADecision();
+
+	s_MaxVel = D->mVel;
+	s_MaxAcceleration = D->mAccel;
+	seekA.mCharacter.mMaxVel = s_MaxVel;
+	seekA.mMaxAccel = s_MaxAcceleration;
+
+	s_Pathcircles = (sizeA < sizeB) ? pathA : pathB;
 }
 
 
@@ -292,9 +323,9 @@ void ResetCharacterForFollow()
 {
 	s_curTarget = 0;
 	
-	seek.mCharacter.mVelocity = ofVec2f(0,0);
+	seekA.mCharacter.mVelocity = ofVec2f(0,0);
 //	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
-	seek.mTarget.mPosition = seek.mCharacter.mPosition;
+	seekA.mTarget.mPosition = seekA.mCharacter.mPosition;
 }
 
 // add forest
@@ -315,27 +346,13 @@ void ofApp::addForest(Location l)
 // choose target and speed
 void ofApp::MakeDecision_ChooseTarget()
 {
-	// create Graph
-
-	// get two targets paths
-	ChooseAlgo Algo;
-	ChooseSpeed Left;
-	ChooseSpeed Right;
+	// cre
 }
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	Decision* A = new Decision();
-	Decision* B = new Decision();
-	Decision* C = new Decision();
-	C->val = 88;
-	C->m_HasAction = true;
 
-	A->True = B;
-	A->False = C;
-
-	auto d = A->makeADecision();
 
 	switch (s_AlgoVersion)
 	{
@@ -355,13 +372,13 @@ void ofApp::setup() {
 		lead.mVelocity = ofVec2f(0.5, 3);
 		targt.mPosition = getAbsoluteObjectPosition(s_Pathcircles[0]);
 		targt.mVelocity = ofVec2f(0, 0);
-		seek = AI::KinemSeek(lead, targt, 8.0f);
-		seek.mCharacter.mMaxVel = s_MaxVel;
-		seek.mMaxAccel = s_MaxAcceleration;
-		seek.mMaxSpeed = 6;
-		seek.mSlowRadArrive = 25;
-		seek.mTargetRadArrive = 10;
-		seek.mTimeTotargetArrive = 0.4f;
+		seekA = AI::KinemSeek(lead, targt, 8.0f);
+		seekA.mCharacter.mMaxVel = s_MaxVel;
+		seekA.mMaxAccel = s_MaxAcceleration;
+		seekA.mMaxSpeed = 6;
+		seekA.mSlowRadArrive = 25;
+		seekA.mTargetRadArrive = 10;
+		seekA.mTimeTotargetArrive = 0.4f;
 
 		ResetCharacterForFollow();
 		break;
@@ -378,24 +395,24 @@ void ofApp::update(){
 	// update target
 	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
 	{
-		if (seek.mSlowRadReached)
+		if (seekA.mSlowRadReached)
 		{
-			seek.mSlowRadReached = false;
+			seekA.mSlowRadReached = false;
 			// change target position
 			s_curTarget++;
 			if (s_curTarget >= s_Pathcircles.size())
 				s_curTarget--;
 			auto screenPos = getAbsoluteObjectPosition(s_Pathcircles[s_curTarget]);
-			seek.mTarget.mPosition = screenPos;
+			seekA.mTarget.mPosition = screenPos;
 		}
 
 		//  get steering and update 
-		steer = seek.getSteeringForArrival();
-		float tOr = atan2(seek.mCharacter.mVelocity.y, seek.mCharacter.mVelocity.x);
+		steer = seekA.getSteeringForArrival();
+		float tOr = atan2(seekA.mCharacter.mVelocity.y, seekA.mCharacter.mVelocity.x);
 		steer.mAngular = AISystem::getSteeringFor_Align(
-			tOr, seek.mCharacter.mOrientation,
+			tOr, seekA.mCharacter.mOrientation,
 			1.5, 0.3f, 2.5).mAngular;
-		seek.mCharacter.update(steer, ofGetLastFrameTime()); // update 
+		seekA.mCharacter.update(steer, ofGetLastFrameTime()); // update 
 	}
 
 }
@@ -433,9 +450,9 @@ void ofApp::draw(){
 		//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
 		ofFill();
 		//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
-		ofDrawLine(seek.mCharacter.mPosition, seek.mCharacter.mPosition + 10 * steer.mLinear); // acceleration line
+		ofDrawLine(seekA.mCharacter.mPosition, seekA.mCharacter.mPosition + 10 * steer.mLinear); // acceleration line
 
-		drawBoid(seek.mCharacter.mPosition, seek.mCharacter.mOrientation,
+		drawBoid(seekA.mCharacter.mPosition, seekA.mCharacter.mOrientation,
 			ofColor(250, 0, 150));
 	}
 }
