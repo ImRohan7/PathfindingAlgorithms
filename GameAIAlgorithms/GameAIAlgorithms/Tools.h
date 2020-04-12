@@ -10,6 +10,7 @@
 enum DecisionAlgoType
 {
 	DecisionTree,
+	BehavTree,
 };
 
 // the version to run
@@ -66,4 +67,15 @@ ofVec2f getAbsoluteObjectPosition(Location iLoc)
 	result.y = (iLoc.y * s_CellSize) + s_MarginTopY;
 	result += s_CellSize / 2;
 	return result;
+}
+
+double getStraightDistance(Location a, Location b)
+{
+	// we use pythagoras theorem z^2 = x^2 + y^2;
+	double x = std::abs(a.x - b.x);
+	double y = std::abs(a.y - b.y);
+	x *= x;
+	y *= y;
+	double z = sqrt(x + y);
+	return z;
 }

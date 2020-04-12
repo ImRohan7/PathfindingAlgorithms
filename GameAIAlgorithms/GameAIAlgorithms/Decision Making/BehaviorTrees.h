@@ -18,7 +18,7 @@ namespace BT {
 		{
 			for (Task* t : m_Tasks)
 			{
-				if (t->RunTask())
+				if (t-> RunTask())
 					return true;
 			}
 			return false;

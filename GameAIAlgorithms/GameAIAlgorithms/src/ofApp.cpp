@@ -11,16 +11,12 @@
 #include "../Decision Making/CustomDecisions.h"
 
 namespace {
-	// select one: A star or Djkstra
-	AlgoType s_AlgoType = AlgoType::AStar;
-	// select the Vesrion
-	AlgoVersion s_AlgoVersion = AlgoVersion::InteractiveGrid;
-
-
+	// select Decion Making algo type
+	DecisionAlgoType s_AlgoType = DecisionAlgoType::DecisionTree;
+	
 	// for grid
 	GraphWithWeights s_Grid(1,1);
 	
-	//float s_CellSize = 70; // cell height and width
 	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
 	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
 	ofVec2f linePosHor(s_MarginLeftX + s_Width, s_MarginTopY );
@@ -297,7 +293,7 @@ void ofApp::RunDecisionTree()
 	DT->mAccel = 6;
 	
 	DF->m_HasAction = true;
-	DF->mVel = 4;
+	DF->mVel = 4l;
 	DF->mAccel = 15;
 
 	A1->m_BranchTrue = BT;
@@ -352,19 +348,10 @@ void ofApp::MakeDecision_ChooseTarget()
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-
-
-	switch (s_AlgoVersion)
+	switch (s_AlgoType)
 	{
-	case AlgoVersion::BigDataMap:
-		ExecuteLargeDataSets();
-		break;
-
-	case AlgoVersion::CampusMap:
-		ExecuteCampusMap();
-		break;
 	
-	case AlgoVersion::InteractiveGrid:
+	case DecisionAlgoType::DecisionTree:
 		// follow setup
 		s_Grid = createGridGraph();
 		ExecuteGridExample();
@@ -393,7 +380,7 @@ void ofApp::setup() {
 void ofApp::update(){
 
 	// update target
-	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
+	if (s_AlgoType == DecisionAlgoType::DecisionTree)
 	{
 		if (seekA.mSlowRadReached)
 		{
@@ -420,7 +407,7 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	// Grid Stuff
-	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
+	if (s_AlgoType == DecisionAlgoType::DecisionTree)
 	{
 		ofSetColor(200, 0, 0);
 		DrawGrid();
@@ -433,10 +420,9 @@ void ofApp::draw(){
 		DrawCircleInCell(s_Pathcircles[0].x, s_Pathcircles[0].y);
 
 		auto size = s_Pathcircles.size();
-		ofSetColor(0, 0, 250); // Blue Goal
-		DrawCircleInCell(
-			s_Pathcircles[size-1].x,
-			s_Pathcircles[size-1].y );
+		ofSetColor(0, 0, 250); // Blue Goals
+		DrawCircleInCell(s_GoalA.x, s_GoalA.y );
+		DrawCircleInCell(s_GoalB.x, s_GoalB.y);
 
 		ofSetColor(240, 0, 0);
 		for (auto s : s_Grid.forests)
@@ -521,9 +507,6 @@ void ofApp::mousePressed(int x, int y, int button)
 			ResetCharacterForFollow(); // reset
 			//s_circles.push_back(loc);
 		}
-	}
-	if (s_AlgoVersion == AlgoVersion::InteractiveGrid)
-	{
 	}
 }
 
