@@ -181,7 +181,6 @@
     <ClCompile Include="Decision Making\StateMachines.cpp" />
     <ClCompile Include="Kinematic.cpp" />
     <ClCompile Include="KinemSeek.cpp" />
-    <ClCompile Include="PathFollower.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
   </ItemGroup>

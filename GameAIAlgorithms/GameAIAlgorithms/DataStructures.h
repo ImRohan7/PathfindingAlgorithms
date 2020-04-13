@@ -241,7 +241,9 @@ std::array<Location, 4> SquareGrid::mDirections =
 
 // ------------------- Helpers ----------------
 
-bool operator == (Location a, Location b);
+bool operator == (Location a, Location b) {
+	return a.x == b.x && a.y == b.y;
+}
 
 bool operator != (Location a, Location b) {
 	return !(a == b);

@@ -102,7 +102,7 @@ void ofApp::ExecuteGridExample()
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
 	//draw_grid(grid, 3, nullptr, nullptr, &path);
 	s_PathcirclesPlayer = path;
-
+	_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
 }
 
 // decision making
@@ -162,6 +162,7 @@ void ofApp::RunDecisionTree()
 	_player.m_Character.mMaxAccel = s_MaxAcceleration;
 
 	s_PathcirclesPlayer = (sizeA < sizeB) ? pathA : pathB;
+	_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
 }
 
 
@@ -213,7 +214,7 @@ void ofApp::setup() {
 		_player.m_Character.mSlowRadArrive = 25;
 		_player.m_Character.mTargetRadArrive = 10;
 		_player.m_Character.mTimeTotargetArrive = 0.4f;
-
+		_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
 		_player.UpdateTarget(ofGetLastFrameTime());
 		break;
 
