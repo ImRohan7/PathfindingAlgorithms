@@ -177,9 +177,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AISystem.cpp" />
+    <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="Decision Making\StateMachines.cpp" />
     <ClCompile Include="Kinematic.cpp" />
     <ClCompile Include="KinemSeek.cpp" />
+    <ClCompile Include="PathFollower.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
   </ItemGroup>
@@ -193,6 +195,7 @@
     <ClInclude Include="Decision Making\StateMachines.h" />
     <ClInclude Include="Kinematic.h" />
     <ClInclude Include="KinemSeek.h" />
+    <ClInclude Include="PathFollower.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>

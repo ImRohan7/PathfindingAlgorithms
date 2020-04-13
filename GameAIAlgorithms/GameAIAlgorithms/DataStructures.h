@@ -6,6 +6,9 @@
 #include <unordered_set>
 #include <unordered_map>
 
+using std::pair;
+using std::hash;
+
 struct Location {
 	int x, y;
 	Location() {}
@@ -25,7 +28,7 @@ struct Node {
 
 };
 
-bool operator==(std::pair<Node, Node> a, pair<Node, Node> b)
+bool operator==(std::pair<Node, Node> a, std::pair<Node, Node> b)
 {
 	return a.first == b.first && a.second == b.second;
 }
@@ -238,9 +241,7 @@ std::array<Location, 4> SquareGrid::mDirections =
 
 // ------------------- Helpers ----------------
 
-bool operator == (Location a, Location b) {
-	return a.x == b.x && a.y == b.y;
-}
+bool operator == (Location a, Location b);
 
 bool operator != (Location a, Location b) {
 	return !(a == b);

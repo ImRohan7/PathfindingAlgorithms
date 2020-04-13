@@ -8,7 +8,7 @@ physics::SteeringOutput AI::KinemSeek::getSteering()
 {
 	physics::SteeringOutput steering;
 
-	ofVec2f dir = (mTarget.mPosition - mCharacter.mPosition).normalize(); // get vel dir
+	ofVec2f dir = (mTarget.mPosition - mChar.mPosition).normalize(); // get vel dir
 	steering.mLinear = dir * mMaxSpeed;
 	
 	return steering;
@@ -20,7 +20,7 @@ physics::SteeringOutput AI::KinemSeek::getSteeringForArrival()
 {
 	physics::SteeringOutput steering;
 	
-	ofVec2f dir = mTarget.mPosition - mCharacter.mPosition; // get vel dir
+	ofVec2f dir = mTarget.mPosition - mChar.mPosition; // get vel dir
 	float distance = dir.length();
 	float targetSpeed = 0.0f;
 	ofVec2f targetVel;
@@ -43,7 +43,7 @@ physics::SteeringOutput AI::KinemSeek::getSteeringForArrival()
 	targetVel *= targetSpeed;
 
 	// get acceleration dir
-	steering.mLinear = targetVel - mCharacter.mVelocity;
+	steering.mLinear = targetVel - mChar.mVelocity;
 	//steering.mLinear = targetVel;
 	steering.mLinear /= mTimeTotargetArrive;
 
@@ -61,8 +61,8 @@ physics::SteeringOutput AI::KinemSeek::getSteeringForArrival()
 physics::SteeringOutput AI::KinemSeek::getSteeringForWandering()
 {
 	physics::SteeringOutput steering;
-	float x = cos(mCharacter.mOrientation);
-	float y = sin(mCharacter.mOrientation);
+	float x = cos(mChar.mOrientation);
+	float y = sin(mChar.mOrientation);
 	steering.mLinear = mMaxSpeed * ofVec2f(x, y);
 
 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);

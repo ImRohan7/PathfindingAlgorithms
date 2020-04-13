@@ -10,7 +10,7 @@ namespace AI {
 		KinemSeek() {};
 
 		KinemSeek(physics::Kinematic c, physics::Kinematic tar, float maxSp)
-			: mCharacter(c), mTarget(tar), mMaxSpeed(maxSp){}
+			: mChar(c), mTarget(tar), mMaxSpeed(maxSp){}
 
 		// returns steering based on player and target
 		physics::SteeringOutput getSteering();
@@ -19,7 +19,7 @@ namespace AI {
 		// Wander
 		physics::SteeringOutput getSteeringForWandering();
 		
-		physics::Kinematic mCharacter;
+		physics::Kinematic mChar;
 		physics::Kinematic mTarget;
 		bool mSlowRadReached = false;
 		float mMaxSpeed;

@@ -19,6 +19,12 @@
     <ClCompile Include="Decision Making\StateMachines.cpp">
       <Filter>src\Decision Making</Filter>
     </ClCompile>
+    <ClCompile Include="PathFollower.cpp">
+      <Filter>src\Movements</Filter>
+    </ClCompile>
+    <ClCompile Include="DataStructures.cpp">
+      <Filter>src\PathFinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="Decision Making\DTree.h">
       <Filter>src\Decision Making</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFollower.h">
+      <Filter>src\Movements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

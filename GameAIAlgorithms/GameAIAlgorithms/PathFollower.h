@@ -7,15 +7,13 @@
 
 */
 
-
 class Follower {
 
 public:
 
-	void initliaze();
-	void UpdateTarget();
+	void UpdateTarget(float lastFrameTime);
 	void Reset();
-
+	
 public:
 	AI::KinemSeek m_Character;
 	int m_CurTarget; // index of current target

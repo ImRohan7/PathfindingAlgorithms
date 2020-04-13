@@ -5,10 +5,10 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "../KinemSeek.h"
 #include "../AISystem.h"
 #include "../Decision Making/DTree.h"
 #include "../Decision Making/CustomDecisions.h"
+#include "../PathFollower.h"
 
 namespace {
 	// select Decion Making algo type
@@ -26,9 +26,8 @@ namespace {
 	Location s_Start({ 1,4 });
 
 	// Kinematic 
-	//physics::Kinematic lead; // leader
-	//physics::Kinematic targt;
-	AI::KinemSeek _player;
+	Follower _player;
+	//AI::KinemSeek _player;
 	AI::KinemSeek _mosnsterA;
 	physics::SteeringOutput steer;
 	int s_curTargetPlayer = 0; // target to follow
@@ -86,7 +85,8 @@ GraphWithWeights createGridGraph() {
 void ofApp::ExecuteGridExample()
 {
 	Location start = getQuanizedLocation(
-		_player.mCharacter.mPosition.x, _player.mCharacter.mPosition.y);
+		_player.m_Character.mChar.mPosition.x,
+		_player.m_Character.mChar.mPosition.y);
 	Location goal = s_GoalA;
 	std::unordered_map<Location, Location> came_from;
 	std::unordered_map<Location, double> cost_so_far;
@@ -110,7 +110,8 @@ void ofApp::RunDecisionTree()
 {
 	// running two algos
 	Location start = getQuanizedLocation(
-		_player.mCharacter.mPosition.x, _player.mCharacter.mPosition.y);
+		_player.m_Character.mChar.mPosition.x,
+		_player.m_Character.mChar.mPosition.y);
 	Location goalA = s_GoalA;
 	Location goalB = s_GoalB;
 	std::unordered_map<Location, Location> came_fromA;
@@ -157,22 +158,22 @@ void ofApp::RunDecisionTree()
 
 	s_MaxVel = D->mVel;
 	s_MaxAcceleration = D->mAccel;
-	_player.mCharacter.mMaxVel = s_MaxVel;
-	_player.mMaxAccel = s_MaxAcceleration;
+	_player.m_Character.mChar.mMaxVel = s_MaxVel;
+	_player.m_Character.mMaxAccel = s_MaxAcceleration;
 
 	s_PathcirclesPlayer = (sizeA < sizeB) ? pathA : pathB;
 }
 
 
 // Helpers ==============
-void ResetCharacterForFollow()
-{
-	s_curTargetPlayer = 0;
-	
-	_player.mCharacter.mVelocity = ofVec2f(0,0);
-//	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
-	_player.mTarget.mPosition = _player.mCharacter.mPosition;
-}
+//void ResetCharacterForFollow()
+//{
+//	s_curTargetPlayer = 0;
+//	
+//	_player.mCharacter.mVelocity = ofVec2f(0,0);
+////	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
+//	_player.mTarget.mPosition = _player.mCharacter.mPosition;
+//}
 
 // add forest
 void ofApp::addForest(Location l)
@@ -205,15 +206,15 @@ void ofApp::setup() {
 		// follow setup
 		s_Grid = createGridGraph();
 		ExecuteGridExample();
-		_player = AI::KinemSeek(physics::Kinematic(), physics::Kinematic(), 8.0f);
-		_player.mCharacter.mMaxVel = s_MaxVel;
-		_player.mMaxAccel = s_MaxAcceleration;
-		_player.mMaxSpeed = 6;
-		_player.mSlowRadArrive = 25;
-		_player.mTargetRadArrive = 10;
-		_player.mTimeTotargetArrive = 0.4f;
+		_player.m_Character = AI::KinemSeek(physics::Kinematic(), physics::Kinematic(), 8.0f);
+		_player.m_Character.mChar.mMaxVel = s_MaxVel;
+		_player.m_Character.mMaxAccel = s_MaxAcceleration;
+		_player.m_Character.mMaxSpeed = 6;
+		_player.m_Character.mSlowRadArrive = 25;
+		_player.m_Character.mTargetRadArrive = 10;
+		_player.m_Character.mTimeTotargetArrive = 0.4f;
 
-		ResetCharacterForFollow();
+		_player.UpdateTarget(ofGetLastFrameTime());
 		break;
 
 	default:
@@ -225,28 +226,7 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	// update target
-	if (s_AlgoType == DecisionAlgoType::DecisionTree)
-	{
-		if (_player.mSlowRadReached)
-		{
-			_player.mSlowRadReached = false;
-			// change target position
-			s_curTargetPlayer++;
-			if (s_curTargetPlayer >= s_PathcirclesPlayer.size())
-				s_curTargetPlayer--;
-			auto newTarget = getAbsoluteObjectPosition(s_PathcirclesPlayer[s_curTargetPlayer]);
-			_player.mTarget.mPosition = newTarget;
-		}
-
-		//  get steering and update 
-		steer = _player.getSteeringForArrival();
-		float tOr = atan2(_player.mCharacter.mVelocity.y, _player.mCharacter.mVelocity.x);
-		steer.mAngular = AISystem::getSteeringFor_Align(
-			tOr, _player.mCharacter.mOrientation,
-			1.5, 0.3f, 2.5).mAngular;
-		_player.mCharacter.update(steer, ofGetLastFrameTime()); // update 
-	}
+	_player.UpdateTarget(ofGetLastFrameTime());
 
 }
 
@@ -282,9 +262,11 @@ void ofApp::draw(){
 		//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
 		ofFill();
 		//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
-		ofDrawLine(_player.mCharacter.mPosition, _player.mCharacter.mPosition + 10 * steer.mLinear); // acceleration line
+		ofDrawLine(_player.m_Character.mChar.mPosition,
+			_player.m_Character.mChar.mPosition + 10 * steer.mLinear); // acceleration line
 
-		drawBoid(_player.mCharacter.mPosition, _player.mCharacter.mOrientation,
+		drawBoid(_player.m_Character.mChar.mPosition,
+			_player.m_Character.mChar.mOrientation,
 			ofColor(250, 0, 150));
 	}
 }
@@ -350,7 +332,7 @@ void ofApp::mousePressed(int x, int y, int button)
 			s_ClickCounter = 0;
 
 			RunDecisionTree();
-			ResetCharacterForFollow(); // reset
+			_player.Reset(); // reset
 			//s_circles.push_back(loc);
 		}
 	}
