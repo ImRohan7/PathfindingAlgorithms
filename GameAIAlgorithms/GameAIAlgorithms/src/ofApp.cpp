@@ -8,6 +8,7 @@
 #include "../AISystem.h"
 #include "../Decision Making/DTree.h"
 #include "../Decision Making/CustomDecisions.h"
+#include "../Decision Making/BehaviorTrees.h"
 #include "../PathFollower.h"
 
 namespace {
@@ -27,13 +28,11 @@ namespace {
 
 	// Kinematic 
 	Follower _player;
+	Follower _monster;
 	//AI::KinemSeek _player;
-	AI::KinemSeek _mosnsterA;
 	physics::SteeringOutput steer;
-	int s_curTargetPlayer = 0; // target to follow
-	int s_curTargetMonster = 0; // target to follow
-	std::vector<Location> s_PathcirclesPlayer; // path
-	std::vector<Location> s_PathcirclesMonster; // path
+	//std::vector<Location> s_PathcirclesPlayer; // path
+	//std::vector<Location> s_PathcirclesMonster; // path
 
 	// Decision Making variables
 	float s_MaxVel = 2; // 3
@@ -43,6 +42,18 @@ namespace {
 
 // ====================================
 
+void CreateBehaviorTree()
+{
+
+	Task roam;	// generate random target and roam
+	Task IsCloseToPlayer; // is close to player radius
+	Task Chase;
+	Task IsCloseEnoughToPlayer; // is close to player radius
+	Task Kill;
+	Task Shoot;
+
+	Sequence g; 
+}
 
 //----------
 // Example setups
@@ -95,14 +106,8 @@ void ofApp::ExecuteGridExample()
 	else
 		a_star_search(s_Grid, start, goal, came_from, cost_so_far);
 		
-	//draw_grid(grid, 2, nullptr, &came_from);
-	//std::cout << '\n';
-	//draw_grid(grid, 3, &cost_so_far, nullptr);
-	//std::cout << '\n';
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
-	//draw_grid(grid, 3, nullptr, nullptr, &path);
-	s_PathcirclesPlayer = path;
-	_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
+	_player.m_PathcirclesPlayer = path;
 }
 
 // decision making
@@ -161,20 +166,12 @@ void ofApp::RunDecisionTree()
 	_player.m_Character.mChar.mMaxVel = s_MaxVel;
 	_player.m_Character.mMaxAccel = s_MaxAcceleration;
 
-	s_PathcirclesPlayer = (sizeA < sizeB) ? pathA : pathB;
-	_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
+	_player.m_PathcirclesPlayer = (sizeA < sizeB) ? pathA : pathB;
+	 
 }
 
 
 // Helpers ==============
-//void ResetCharacterForFollow()
-//{
-//	s_curTargetPlayer = 0;
-//	
-//	_player.mCharacter.mVelocity = ofVec2f(0,0);
-////	seek.mCharacter.mPosition = getAbsoluteObjectPosition(s_Start);
-//	_player.mTarget.mPosition = _player.mCharacter.mPosition;
-//}
 
 // add forest
 void ofApp::addForest(Location l)
@@ -214,8 +211,10 @@ void ofApp::setup() {
 		_player.m_Character.mSlowRadArrive = 25;
 		_player.m_Character.mTargetRadArrive = 10;
 		_player.m_Character.mTimeTotargetArrive = 0.4f;
-		_player.m_PathcirclesPlayer = s_PathcirclesPlayer;
 		_player.UpdateTarget(ofGetLastFrameTime());
+		_monster.m_Character = _player.m_Character;
+		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
+		_monster.UpdateTarget(ofGetLastFrameTime());
 		break;
 
 	default:
@@ -228,6 +227,7 @@ void ofApp::setup() {
 void ofApp::update(){
 
 	_player.UpdateTarget(ofGetLastFrameTime());
+	_monster.UpdateTarget(ofGetLastFrameTime());
 
 }
 
@@ -238,36 +238,33 @@ void ofApp::draw(){
 	{
 		ofSetColor(200, 0, 0);
 		DrawGrid();
-
-		ofSetColor(83, 228, 250); // Yellow circles path
-		for (auto s : s_PathcirclesPlayer)
-			DrawCircleInCell(s.x, s.y);
 		
-		ofSetColor(10, 223, 60); // Green circles First
-		DrawCircleInCell(s_PathcirclesPlayer[0].x, s_PathcirclesPlayer[0].y);
+		_player.DrawPath(); // draw path
+		_monster.DrawPath();
 
-		auto size = s_PathcirclesPlayer.size();
+		auto size = _player.m_PathcirclesPlayer.size();
 		ofSetColor(0, 0, 250); // Blue Goals
 		DrawCircleInCell(s_GoalA.x, s_GoalA.y );
 		DrawCircleInCell(s_GoalB.x, s_GoalB.y);
 
 		ofSetColor(240, 0, 0);
-		for (auto s : s_Grid.forests)
+		for (auto s : s_Grid.forests) // draw forests
 			DrawCircleInCell(s.x, s.y);
 
 
 		// follow stuff
 		ofSetColor(250, 0, 150);
 		ofNoFill();
-		//ofDrawCircle(seek.mTarget.mPosition, seek.mSlowRadArrive); // slow rad
-		//ofDrawCircle(seek.mTarget.mPosition, seek.mTargetRadArrive); // target rad
 		ofFill();
-		//drawBoid(seek.mTarget.mPosition, seek.mTarget.mOrientation);
 		ofDrawLine(_player.m_Character.mChar.mPosition,
 			_player.m_Character.mChar.mPosition + 10 * steer.mLinear); // acceleration line
 
 		drawBoid(_player.m_Character.mChar.mPosition,
 			_player.m_Character.mChar.mOrientation,
+			ofColor(250, 0, 150));
+
+		drawBoid(_monster.m_Character.mChar.mPosition,
+			_monster.m_Character.mChar.mOrientation,
 			ofColor(250, 0, 150));
 	}
 }

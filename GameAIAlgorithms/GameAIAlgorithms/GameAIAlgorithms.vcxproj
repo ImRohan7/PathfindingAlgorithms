@@ -177,7 +177,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AISystem.cpp" />
-    <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="Decision Making\StateMachines.cpp" />
     <ClCompile Include="Kinematic.cpp" />
     <ClCompile Include="KinemSeek.cpp" />

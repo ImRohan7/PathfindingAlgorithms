@@ -19,9 +19,6 @@
     <ClCompile Include="Decision Making\StateMachines.cpp">
       <Filter>src\Decision Making</Filter>
     </ClCompile>
-    <ClCompile Include="DataStructures.cpp">
-      <Filter>src\PathFinding</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

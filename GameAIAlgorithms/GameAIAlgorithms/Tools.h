@@ -79,3 +79,11 @@ double getStraightDistance(Location a, Location b)
 	double z = sqrt(x + y);
 	return z;
 }
+
+// Draw circle in cell
+void DrawCircle_InCell(int x, int y)
+{
+	auto pos = getLocalizedOnScreenPosition({ x,y });
+	ofVec2f po(pos.first, pos.second);
+	ofDrawCircle(po + s_CellSize / 2, 15.0f);
+}

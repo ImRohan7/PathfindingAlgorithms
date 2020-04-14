@@ -2,7 +2,6 @@
 #include <vector>
 
 // Behavior Trees
-namespace BT {
 	using namespace std;
 
 	class Task {
@@ -89,4 +88,3 @@ namespace BT {
 
 	};
 
-}
