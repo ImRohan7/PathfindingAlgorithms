@@ -6,7 +6,7 @@
 
 	class Task {
 	public:
-		virtual bool RunTask();
+		virtual bool RunTask() { return false; };
 	};
 
 	// succeeds if one of the children succeeds

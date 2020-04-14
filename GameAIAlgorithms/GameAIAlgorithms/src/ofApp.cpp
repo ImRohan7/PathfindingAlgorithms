@@ -11,6 +11,11 @@
 #include "../Decision Making/BehaviorTrees.h"
 #include "../PathFollower.h"
 
+
+// helper fun
+bool Is_CloseToPlayer();
+
+
 namespace {
 	// select Decion Making algo type
 	DecisionAlgoType s_AlgoType = DecisionAlgoType::DecisionTree;
@@ -29,29 +34,103 @@ namespace {
 	// Kinematic 
 	Follower _player;
 	Follower _monster;
-	//AI::KinemSeek _player;
 	physics::SteeringOutput steer;
-	//std::vector<Location> s_PathcirclesPlayer; // path
-	//std::vector<Location> s_PathcirclesMonster; // path
 
 	// Decision Making variables
 	float s_MaxVel = 2; // 3
 	float s_MaxAcceleration = 6; // 12
 	int s_ClickCounter = 0;
+
+
+	// fun
+
+	// 
+	class IsCloseToPlayer : public Task {
+	public:
+		bool RunTask() override
+		{
+			return Is_CloseToPlayer();
+		}
+			
+	};
+
+	//
+	class IsShootingRangeOfPlayer : public Task {
+	public:
+		bool RunTask() override
+		{
+			return Is_CloseToPlayer();
+		}
+
+	};
+
+	// 
+	class Roam : public Task {
+	public:
+		bool RunTask() override
+		{
+			// if target reached then
+			// change target
+			// else do nothing
+		}
+	};
+
+	// 
+	class Chase : public Task {
+	public:
+		bool RunTask() override
+		{
+			// keep chnaging monster path circle by calculation pos
+			// else do nothing
+		}
+	};
+
+	// Kill
+	class Kill : public Task {
+	public:
+		bool RunTask() override
+		{
+			// keep chnaging monster path circle by calculation pos
+			// else do nothing
+		}
+	};
+
 }
+
+// ======= ============ ============
+
+float getDistance()
+{
+	Location posPlayer = getQuanizedLocation(
+		_player.m_Character.mChar.mPosition.x,
+		_player.m_Character.mChar.mPosition.y);
+
+	Location posMonst = getQuanizedLocation(
+		_monster.m_Character.mChar.mPosition.x,
+		_monster.m_Character.mChar.mPosition.y);
+
+	return getStraightDistance(posPlayer, posMonst);
+
+}
+
+bool Is_CloseToPlayer()
+{
+	float d = getDistance();
+	if (d < 200)
+		return true;
+	return false;
+}
+
+// ======= ============ ============
+
 
 // ====================================
 
 void CreateBehaviorTree()
 {
 
-	Task roam;	// generate random target and roam
-	Task IsCloseToPlayer; // is close to player radius
-	Task Chase;
-	Task IsCloseEnoughToPlayer; // is close to player radius
-	Task Kill;
-	Task Shoot;
-
+	IsCloseToPlayer t1;
+	
 	Sequence g; 
 }
 
