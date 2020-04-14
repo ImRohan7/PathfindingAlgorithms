@@ -13,7 +13,8 @@
 
 
 // helper fun
-bool Is_CloseToPlayer();
+bool Is_CloseToPlayer(float dist);
+std::vector<Location> getPathFortarget(Location start, Location goal);
 
 
 namespace {
@@ -41,17 +42,14 @@ namespace {
 	float s_MaxAcceleration = 6; // 12
 	int s_ClickCounter = 0;
 
-
-	// fun
-
-	// 
+	//// **************************************************
+	// functions
 	class IsCloseToPlayer : public Task {
 	public:
 		bool RunTask() override
 		{
-			return Is_CloseToPlayer();
+			return !Is_CloseToPlayer(500);
 		}
-			
 	};
 
 	//
@@ -59,29 +57,52 @@ namespace {
 	public:
 		bool RunTask() override
 		{
-			return Is_CloseToPlayer();
+			return Is_CloseToPlayer(200);
 		}
 
 	};
 
-	// 
-	class Roam : public Task {
+	//  Monster Roam while keeping a safe distance
+	class RoamAway : public Task {
 	public:
 		bool RunTask() override
 		{
-			// if target reached then
-			// change target
-			// else do nothing
+			if (Is_CloseToPlayer(500))
+			{
+				return false;
+			}
+			else {
+				if (_monster.m_IsTargetReached)
+				{
+					_monster.Reset(); // reset
+					int x = rand() % 20; // generate random target
+					int y = rand() % 20;
+					Location goal(x, y);
+					Location start = _monster.getQuantizedLocation();
+					_monster.m_PathcirclesPlayer = getPathFortarget(start, goal);
+				}
+				return true;
+			}
 		}
 	};
 
 	// 
-	class Chase : public Task {
+	class ChaseDown : public Task {
 	public:
 		bool RunTask() override
 		{
-			// keep chnaging monster path circle by calculation pos
-			// else do nothing
+			if (Is_CloseToPlayer(200))
+			{
+				return false;
+			}
+			else {
+				// keep chnaging monster path circle by calculation pos
+				Location goal = _player.getQuantizedLocation();
+				Location start = _monster.getQuantizedLocation();
+				_monster.m_PathcirclesPlayer = getPathFortarget(start, goal);
+
+				return true;
+			}
 		}
 	};
 
@@ -92,14 +113,15 @@ namespace {
 		{
 			// keep chnaging monster path circle by calculation pos
 			// else do nothing
+			return false;
 		}
 	};
-
+	// ******************************************************
 }
 
 // ======= ============ ============
 
-float getDistance()
+float getDistancebetweenPlayandMonster()
 {
 	Location posPlayer = getQuanizedLocation(
 		_player.m_Character.mChar.mPosition.x,
@@ -109,14 +131,14 @@ float getDistance()
 		_monster.m_Character.mChar.mPosition.x,
 		_monster.m_Character.mChar.mPosition.y);
 
-	return getStraightDistance(posPlayer, posMonst);
+	return getStraightDistance(posPlayer, posMonst) * s_CellSize;
 
 }
 
-bool Is_CloseToPlayer()
+bool Is_CloseToPlayer(float dist)
 {
-	float d = getDistance();
-	if (d < 200)
+	float d = getDistancebetweenPlayandMonster();
+	if (d < dist)
 		return true;
 	return false;
 }
@@ -128,10 +150,25 @@ bool Is_CloseToPlayer()
 
 void CreateBehaviorTree()
 {
+	// create tasks
+	RoamAway* t_roam = new RoamAway();
+	ChaseDown* t_chase = new ChaseDown();
 
-	IsCloseToPlayer t1;
-	
-	Sequence g; 
+	UntilFail* ufail_1 = new UntilFail(); // roam until 
+	ufail_1->m_Task = t_roam;
+
+	UntilFail* ufail_2 = new UntilFail(); // chase until close
+	ufail_2->m_Task = t_chase;
+
+	Kill * t_kill = new Kill();
+
+	Sequencer * mainRoot = new Sequencer(); // A
+	mainRoot->m_Tasks.push_back(ufail_1); // 1
+	mainRoot->m_Tasks.push_back(ufail_2); // 2
+	mainRoot->m_Tasks.push_back(ufail_2); // 3
+
+
+
 }
 
 //----------
@@ -188,6 +225,18 @@ void ofApp::ExecuteGridExample()
 	std::vector<Location> path = reconstruct_path(start, goal, came_from);
 	_player.m_PathcirclesPlayer = path;
 }
+
+
+std::vector<Location> getPathFortarget(Location start, Location goal)
+{
+	std::unordered_map<Location, Location> came_from;
+	std::unordered_map<Location, double> cost_so_far;
+	a_star_search(s_Grid, start, goal, came_from, cost_so_far);
+
+	std::vector<Location> path = reconstruct_path(start, goal, came_from);
+	return path;
+}
+
 
 // decision making
 void ofApp::RunDecisionTree()
@@ -294,8 +343,12 @@ void ofApp::setup() {
 		_monster.m_Character = _player.m_Character;
 		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
 		_monster.UpdateTarget(ofGetLastFrameTime());
+		_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
 		break;
 
+	case DecisionAlgoType::MonsterChase:
+
+		break;
 	default:
 		break;
 	}
@@ -304,10 +357,13 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
-	_player.UpdateTarget(ofGetLastFrameTime());
-	_monster.UpdateTarget(ofGetLastFrameTime());
-
+	if (s_AlgoType == DecisionAlgoType::DecisionTree)
+	{
+		_player.UpdateTarget(ofGetLastFrameTime());
+		//_monster.UpdateTarget(ofGetLastFrameTime());
+	}
+	
+	float d = getDistancebetweenPlayandMonster();
 }
 
 //--------------------------------------------------------------
@@ -394,23 +450,26 @@ void ofApp::mousePressed(int x, int y, int button)
 {
 	auto loc = getQuanizedLocation(x, y);
 	
-	if (button == 2) // right click add forest
+	if (s_AlgoType == DecisionAlgoType::DecisionTree)
 	{
-		addForest(loc);
-	}
-	else
-	{
-		s_ClickCounter++;
-		if (s_ClickCounter == 1)
-			s_GoalA = loc;
-		if (s_ClickCounter == 2)
+		if (button == 2) // right click add forest
 		{
-			s_GoalB = loc;
-			s_ClickCounter = 0;
+			addForest(loc);
+		}
+		else
+		{
+			s_ClickCounter++;
+			if (s_ClickCounter == 1)
+				s_GoalA = loc;
+			if (s_ClickCounter == 2)
+			{
+				s_GoalB = loc;
+				s_ClickCounter = 0;
 
-			RunDecisionTree();
-			_player.Reset(); // reset
-			//s_circles.push_back(loc);
+				RunDecisionTree();
+				_player.Reset(); // reset
+				//s_circles.push_back(loc);
+			}
 		}
 	}
 }

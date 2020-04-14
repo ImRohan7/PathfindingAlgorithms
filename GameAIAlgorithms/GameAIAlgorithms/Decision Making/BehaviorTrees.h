@@ -11,7 +11,7 @@
 
 	// succeeds if one of the children succeeds
 	class Selector {
-
+	public:
 		// goes through children and return true if one of the children runs
 		bool Run()
 		{
@@ -24,14 +24,13 @@
 		}
 
 
-	private:
-
+	public:
 		vector<Task*> m_Tasks;
 	};
 
 	// succeeds if all children succeeds
-	class Sequence {
-
+	class Sequencer {
+	public:
 		// goes through children and return true all children runs
 		bool Run()
 		{
@@ -43,9 +42,7 @@
 			return false;
 		}
 
-
-	private:
-
+	public:
 		vector<Task*> m_Tasks;
 	};
 
@@ -54,7 +51,7 @@
 	class Decorator {
 
 	public:
-		virtual bool RunModified();
+		virtual bool RunModified() { return false; };
 	};
 
 	// invert the result
@@ -71,7 +68,7 @@
 	};
 
 	// example of decorator
-	class UnitlFail : public Decorator, public Task {
+	class UntilFail : public Decorator, public Task {
 	
 	public:
 		bool RunModified() override
@@ -81,9 +78,10 @@
 				if (!m_Task->RunTask())
 					break;
 			}
+			return true;
 		}
 
-	private:
+	public:
 		Task* m_Task;
 
 	};

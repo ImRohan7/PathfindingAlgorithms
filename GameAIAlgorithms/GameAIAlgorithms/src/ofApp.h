@@ -33,7 +33,6 @@ class ofApp : public ofBaseApp{
 		void drawBoid(ofVec2f &pos, float &ori, ofColor &clr);
 		void addForest(Location L);
 
-
 		// Executers
 		void ExecuteLargeDataSets();
 		void ExecuteCampusMap();

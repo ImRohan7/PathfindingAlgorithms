@@ -10,7 +10,7 @@
 enum DecisionAlgoType
 {
 	DecisionTree,
-	BehavTree,
+	MonsterChase,  // behavior tree
 };
 
 // the version to run
