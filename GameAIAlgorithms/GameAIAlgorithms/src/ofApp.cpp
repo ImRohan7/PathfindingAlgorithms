@@ -18,30 +18,9 @@ std::vector<Location> getPathFortarget(Location start, Location goal);
 
 
 namespace {
-	// select Decion Making algo type
-	DecisionAlgoType s_AlgoType = DecisionAlgoType::DecisionTree;
-	
-	// for grid
-	GraphWithWeights s_Grid(1,1);
-	
-	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
-	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
-	ofVec2f linePosHor(s_MarginLeftX + s_Width, s_MarginTopY );
-
-	std::vector<Location> s_Obstacles;
-	Location s_GoalA, s_GoalB;
-	Location s_Start({ 1,4 });
-
 	// Kinematic 
 	Follower _player;
 	Follower _monster;
-	physics::SteeringOutput steer;
-
-	// Decision Making variables
-	float s_MaxVel = 2; // 3
-	float s_MaxAcceleration = 6; // 12
-	int s_ClickCounter = 0;
-
 	//// **************************************************
 	// functions
 	class IsCloseToPlayer : public Task {
@@ -67,7 +46,7 @@ namespace {
 	public:
 		bool RunTask() override
 		{
-			if (Is_CloseToPlayer(500))
+			if (Is_CloseToPlayer(600))
 			{
 				return false;
 			}
@@ -117,6 +96,31 @@ namespace {
 		}
 	};
 	// ******************************************************
+
+	// select Decion Making algo type
+	DecisionAlgoType s_AlgoType = DecisionAlgoType::MonsterChase;
+
+	// for grid
+	GraphWithWeights s_Grid(1, 1);
+
+	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
+	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
+	ofVec2f linePosHor(s_MarginLeftX + s_Width, s_MarginTopY);
+
+	std::vector<Location> s_Obstacles;
+	Location s_GoalA, s_GoalB;
+	Location s_Start({ 1,4 });
+
+	
+	physics::SteeringOutput steer;
+
+	// Decision Making variables
+	float s_MaxVel = 2; // 3
+	float s_MaxAcceleration = 6; // 12
+	int s_ClickCounter = 0;
+
+	// monster chase
+	Sequencer * s_mainRoot;
 }
 
 // ======= ============ ============
@@ -162,13 +166,13 @@ void CreateBehaviorTree()
 
 	Kill * t_kill = new Kill();
 
-	Sequencer * mainRoot = new Sequencer(); // A
-	mainRoot->m_Tasks.push_back(ufail_1); // 1
-	mainRoot->m_Tasks.push_back(ufail_2); // 2
-	mainRoot->m_Tasks.push_back(ufail_2); // 3
+	Sequencer * tmp = new Sequencer(); // A
+	tmp->m_Tasks.push_back(ufail_1); // 1
+	tmp->m_Tasks.push_back(ufail_2); // 2
+	tmp->m_Tasks.push_back(t_kill); // 3
+	//ufail_1->RunTask();
 
-
-
+	s_mainRoot = tmp;
 }
 
 //----------
@@ -187,10 +191,10 @@ GraphWithWeights createGridGraph() {
 	  L{16, 6}, L{6, 7},
 	  L{7, 3}, L{7, 5},
 	   L{14, 3},
-		  L{5, 3}, L{15, 15}, L{15, 16},
+	/*	  L{5, 3}, L{15, 15}, L{15, 16},
 	  L{15, 7}, L{16, 12}, L{16, 13},
 	  L{16, 1}, L{16, 17},
-	  L{7, 19}, L{17, 15}
+	  L{7, 19}, L{17, 15}*/
 	};
 	
 	std::unordered_set<Location>::iterator it = grid.forests.begin();
@@ -325,6 +329,7 @@ void ofApp::MakeDecision_ChooseTarget()
 //--------------------------------------------------------------
 void ofApp::setup() {
 
+
 	switch (s_AlgoType)
 	{
 	
@@ -347,7 +352,22 @@ void ofApp::setup() {
 		break;
 
 	case DecisionAlgoType::MonsterChase:
-
+		s_Grid = createGridGraph();
+		ExecuteGridExample();
+		_player.m_Character = AI::KinemSeek(physics::Kinematic(), physics::Kinematic(), 8.0f);
+		_player.m_Character.mChar.mMaxVel = s_MaxVel;
+		_player.m_Character.mMaxAccel = s_MaxAcceleration;
+		_player.m_Character.mMaxSpeed = 6;
+		_player.m_Character.mSlowRadArrive = 25;
+		_player.m_Character.mTargetRadArrive = 10;
+		_player.m_Character.mTimeTotargetArrive = 0.4f;
+		_player.UpdateTarget(ofGetLastFrameTime());
+		_monster.m_Character = _player.m_Character;
+		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
+		_monster.UpdateTarget(ofGetLastFrameTime());
+		_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
+		_player.m_Character.mChar.mPosition = ofVec2f(100, 100);
+		CreateBehaviorTree();
 		break;
 	default:
 		break;
@@ -357,20 +377,33 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	if (s_AlgoType == DecisionAlgoType::DecisionTree)
+	switch (s_AlgoType)
 	{
+
+	case DecisionAlgoType::DecisionTree:
+
 		_player.UpdateTarget(ofGetLastFrameTime());
 		//_monster.UpdateTarget(ofGetLastFrameTime());
+		break;
+
+	case DecisionAlgoType::MonsterChase:
+		s_mainRoot->Run();
+		_player.UpdateTarget(ofGetLastFrameTime());
+		_monster.UpdateTarget(ofGetLastFrameTime());
+		break;
+
+	default:
+		break;
 	}
-	
 	float d = getDistancebetweenPlayandMonster();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	// Grid Stuff
-	if (s_AlgoType == DecisionAlgoType::DecisionTree)
+	//if (s_AlgoType == DecisionAlgoType::DecisionTree)
 	{
+		ofFill();
 		ofSetColor(200, 0, 0);
 		DrawGrid();
 		
@@ -401,6 +434,10 @@ void ofApp::draw(){
 		drawBoid(_monster.m_Character.mChar.mPosition,
 			_monster.m_Character.mChar.mOrientation,
 			ofColor(250, 0, 150));
+
+		// draw close radius
+		ofNoFill();
+		ofDrawCircle(_monster.m_Character.mChar.mPosition, 500);
 	}
 }
 

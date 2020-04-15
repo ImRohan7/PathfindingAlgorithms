@@ -37,9 +37,16 @@
 			for (Task* t : m_Tasks)
 			{
 				if (!t->RunTask())
+				{
 					return false;
+				}
+				else
+				{
+					m_Tasks.erase(m_Tasks.begin());
+					return false;
+				}
 			}
-			return false;
+			return true;
 		}
 
 	public:
@@ -71,13 +78,17 @@
 	class UntilFail : public Decorator, public Task {
 	
 	public:
-		bool RunModified() override
+		bool RunTask() override
 		{
-			while (true)
+			/*while (true)
 			{
 				if (!m_Task->RunTask())
 					break;
 			}
+			return true;*/
+
+			if (m_Task->RunTask())
+				return false;
 			return true;
 		}
 
