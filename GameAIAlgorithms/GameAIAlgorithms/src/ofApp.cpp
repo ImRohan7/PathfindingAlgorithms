@@ -65,12 +65,12 @@ namespace {
 		}
 	};
 
-	// 
+	// Chase down
 	class ChaseDown : public Task {
 	public:
 		bool RunTask() override
 		{
-			if (Is_CloseToPlayer(200))
+			if (Is_CloseToPlayer(100))
 			{
 				return false;
 			}
@@ -79,7 +79,7 @@ namespace {
 				Location goal = _player.getQuantizedLocation();
 				Location start = _monster.getQuantizedLocation();
 				_monster.m_PathcirclesPlayer = getPathFortarget(start, goal);
-
+				_monster.m_CurTarget = 0;
 				return true;
 			}
 		}
@@ -390,6 +390,16 @@ void ofApp::update(){
 		s_mainRoot->Run();
 		_player.UpdateTarget(ofGetLastFrameTime());
 		_monster.UpdateTarget(ofGetLastFrameTime());
+
+		if (_player.m_IsTargetReached)
+		{
+			_player.Reset(); // reset
+			int x = rand() % 20; // generate random target
+			int y = rand() % 20;
+			Location goal(x, y);
+			Location start = _player.getQuantizedLocation();
+			_player.m_PathcirclesPlayer = getPathFortarget(start, goal);
+		}
 		break;
 
 	default:
@@ -429,8 +439,8 @@ void ofApp::draw(){
 
 		drawBoid(_player.m_Character.mChar.mPosition,
 			_player.m_Character.mChar.mOrientation,
-			ofColor(250, 0, 150));
-
+		
+			ofColor(150, 180, 150));
 		drawBoid(_monster.m_Character.mChar.mPosition,
 			_monster.m_Character.mChar.mOrientation,
 			ofColor(250, 0, 150));
