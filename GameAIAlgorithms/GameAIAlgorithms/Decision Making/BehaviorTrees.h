@@ -10,10 +10,10 @@
 	};
 
 	// succeeds if one of the children succeeds
-	class Selector {
+	class Selector: public Task {
 	public:
 		// goes through children and return true if one of the children runs
-		bool Run()
+		bool RunTask() override
 		{
 			for (Task* t : m_Tasks)
 			{
@@ -29,10 +29,10 @@
 	};
 
 	// succeeds if all children succeeds
-	class Sequencer {
+	class Sequencer: public Task {
 	public:
 		// goes through children and return true all children runs
-		bool Run()
+		bool RunTask() override
 		{
 			for (Task* t : m_Tasks)
 			{

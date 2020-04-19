@@ -59,7 +59,7 @@ public:
 		m_IsTargetReached = false;
 		m_Character.mChar.mVelocity = ofVec2f(0, 0);
 		m_Character.mTarget.mPosition = m_Character.mChar.mPosition;
-
+		m_Character.mSlowRadReached = true;
 	}
 
 	Location getQuantizedLocation()

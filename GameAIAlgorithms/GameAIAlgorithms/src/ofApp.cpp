@@ -15,31 +15,18 @@
 // helper fun
 bool Is_CloseToPlayer(float dist);
 std::vector<Location> getPathFortarget(Location start, Location goal);
-
+std::vector<Location> getRandomPathFortarget(Location start);
+float getDistancebetweenPlayandMonster();
+void resetBehavTree();
 
 namespace {
 	// Kinematic 
 	Follower _player;
 	Follower _monster;
+	vector<Location> _Traps;
+	bool _IsTrapped = false;
 	//// **************************************************
-	// functions
-	class IsCloseToPlayer : public Task {
-	public:
-		bool RunTask() override
-		{
-			return !Is_CloseToPlayer(500);
-		}
-	};
-
-	//
-	class IsShootingRangeOfPlayer : public Task {
-	public:
-		bool RunTask() override
-		{
-			return Is_CloseToPlayer(200);
-		}
-
-	};
+	//// functions
 
 	//  Monster Roam while keeping a safe distance
 	class RoamAway : public Task {
@@ -70,7 +57,7 @@ namespace {
 	public:
 		bool RunTask() override
 		{
-			if (Is_CloseToPlayer(100))
+			if (Is_CloseToPlayer(40))
 			{
 				return false;
 			}
@@ -86,15 +73,54 @@ namespace {
 	};
 
 	// Kill
-	class Kill : public Task {
+	class InstantKill : public Task {
 	public:
 		bool RunTask() override
 		{
-			// keep chnaging monster path circle by calculation pos
-			// else do nothing
-			return false;
+			// draw square box and kill
+			if (rand() % 5 < 3)
+			{
+				// add traps
+				Location posMonst = _monster.getQuantizedLocation();
+				// reset player
+				int x = posMonst.x;
+				int y  = posMonst.y;
+				_Traps = { {x + 1, y}, {x, y + 1 },
+				{x - 1, y}, {x, y - 1},
+				{x + 1,y + 1}, {x + 1,y - 1},
+				{x - 1,y - 1}, {x - 1,y + 1} };
+				_IsTrapped = true;
+
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	};
+
+	class BoxKill : public Task {
+	public:
+		bool RunTask() override
+		{
+			// add traps
+			Location posMonst = _monster.getQuantizedLocation();
+			// reset player
+			int x = posMonst.x;
+			int y = posMonst.y;
+			_Traps = { {x + 2, y}, {x, y + 2 },
+			{x - 2, y}, {x, y - 2},
+			{x + 2,y + 2}, {x + 2,y - 2},
+			{x - 2,y - 2}, {x - 2,y + 2} };
+			_IsTrapped = true;
+
+			return true;
+
+		}
+	};
+
+
 	// ******************************************************
 
 	// select Decion Making algo type
@@ -164,13 +190,17 @@ void CreateBehaviorTree()
 	UntilFail* ufail_2 = new UntilFail(); // chase until close
 	ufail_2->m_Task = t_chase;
 
-	Kill * t_kill = new Kill();
+	InstantKill * t_kill = new InstantKill();
+	BoxKill * t_Box = new BoxKill();
+
+	Selector* KillSelector = new Selector();
+	KillSelector->m_Tasks.push_back(t_kill);
+	KillSelector->m_Tasks.push_back(t_Box);
 
 	Sequencer * tmp = new Sequencer(); // A
 	tmp->m_Tasks.push_back(ufail_1); // 1
 	tmp->m_Tasks.push_back(ufail_2); // 2
-	tmp->m_Tasks.push_back(t_kill); // 3
-	//ufail_1->RunTask();
+	tmp->m_Tasks.push_back(KillSelector); // 3
 
 	s_mainRoot = tmp;
 }
@@ -230,6 +260,13 @@ void ofApp::ExecuteGridExample()
 	_player.m_PathcirclesPlayer = path;
 }
 
+std::vector<Location> getRandomPathFortarget(Location start)
+{
+	int x = rand() % 20; // generate random target
+	int y = rand() % 20;
+	Location goal(x, y);
+	return getPathFortarget(start, goal);
+}
 
 std::vector<Location> getPathFortarget(Location start, Location goal)
 {
@@ -363,6 +400,8 @@ void ofApp::setup() {
 		_player.m_Character.mTimeTotargetArrive = 0.4f;
 		_player.UpdateTarget(ofGetLastFrameTime());
 		_monster.m_Character = _player.m_Character;
+		_monster.m_Character.mChar.mMaxVel = 4;
+		_monster.m_Character.mMaxAccel = 11;
 		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
 		_monster.UpdateTarget(ofGetLastFrameTime());
 		_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
@@ -387,19 +426,21 @@ void ofApp::update(){
 		break;
 
 	case DecisionAlgoType::MonsterChase:
-		s_mainRoot->Run();
+		s_mainRoot->RunTask();
 		_player.UpdateTarget(ofGetLastFrameTime());
 		_monster.UpdateTarget(ofGetLastFrameTime());
 
-		if (_player.m_IsTargetReached)
+		if (_player.m_IsTargetReached && !_IsTrapped)
 		{
 			_player.Reset(); // reset
 			int x = rand() % 20; // generate random target
 			int y = rand() % 20;
-			Location goal(x, y);
 			Location start = _player.getQuantizedLocation();
+			Location goal(x, y);
 			_player.m_PathcirclesPlayer = getPathFortarget(start, goal);
 		}
+		if (_IsTrapped)
+			_player.m_Character.mChar.mVelocity = ofVec2f(0,0);
 		break;
 
 	default:
@@ -429,7 +470,6 @@ void ofApp::draw(){
 		for (auto s : s_Grid.forests) // draw forests
 			DrawCircleInCell(s.x, s.y);
 
-
 		// follow stuff
 		ofSetColor(250, 0, 150);
 		ofNoFill();
@@ -448,6 +488,15 @@ void ofApp::draw(){
 		// draw close radius
 		ofNoFill();
 		ofDrawCircle(_monster.m_Character.mChar.mPosition, 500);
+
+		ofFill();
+
+		// DrawTrap
+		for (auto l : _Traps)
+		{
+			ofColor(153, 0, 76);
+			DrawCircleInCell(l.x, l.y);
+		}
 	}
 }
 
@@ -490,6 +539,20 @@ void ofApp::DrawCircleInCell(int x, int y)
 	ofDrawCircle(po + s_CellSize/2, 15.0f);
 }
 
+// reset
+void resetBehavTree()
+{
+	_IsTrapped = false;
+	_Traps.clear();
+	_player.m_Character.mChar.mPosition = ofVec2f(rand()%100, rand()%100);
+	_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
+	_player.Reset();
+	_monster.Reset();
+	_player.m_PathcirclesPlayer = getRandomPathFortarget(_player.getQuantizedLocation());
+	_monster.m_PathcirclesPlayer = getRandomPathFortarget(_monster.getQuantizedLocation());
+	CreateBehaviorTree();
+}
+
 //--------------------------------------------------------
 // MOUSE PRESSED
 //--------------------------------------------------------------
@@ -518,6 +581,10 @@ void ofApp::mousePressed(int x, int y, int button)
 				//s_circles.push_back(loc);
 			}
 		}
+	}
+	if (s_AlgoType == DecisionAlgoType::MonsterChase)
+	{
+		resetBehavTree();
 	}
 }
 
