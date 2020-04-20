@@ -20,20 +20,28 @@ float getDistancebetweenPlayandMonster();
 void resetBehavTree();
 
 namespace {
+	// select Decion Making algo type
+	DecisionAlgoType s_AlgoType = DecisionAlgoType::MonsterChase;
+	// for Monster Chase
+	float s_chaseRadius = 200;
+	float s_killRadius = 40;
+
 	// Kinematic 
 	Follower _player;
 	Follower _monster;
+	
 	vector<Location> _Traps;
+
 	bool _IsTrapped = false;
 	//// **************************************************
-	//// functions
+	//// Custom Tasks
 
 	//  Monster Roam while keeping a safe distance
 	class RoamAway : public Task {
 	public:
 		bool RunTask() override
 		{
-			if (Is_CloseToPlayer(600))
+			if (Is_CloseToPlayer(s_chaseRadius))
 			{
 				return false;
 			}
@@ -57,7 +65,7 @@ namespace {
 	public:
 		bool RunTask() override
 		{
-			if (Is_CloseToPlayer(40))
+			if (Is_CloseToPlayer(s_killRadius))
 			{
 				return false;
 			}
@@ -72,7 +80,18 @@ namespace {
 		}
 	};
 
-	// Kill
+	// increase speed to chase
+	class SpeedUp : public Task {
+		
+		bool RunTask() override
+		{
+			_monster.m_Character.mMaxAccel = 14;
+			_monster.m_Character.mChar.mMaxVel = 4;
+			return true;
+		}
+	};
+
+	// small Kill
 	class InstantKill : public Task {
 	public:
 		bool RunTask() override
@@ -100,6 +119,7 @@ namespace {
 		}
 	};
 
+	// big box kill
 	class BoxKill : public Task {
 	public:
 		bool RunTask() override
@@ -123,15 +143,12 @@ namespace {
 
 	// ******************************************************
 
-	// select Decion Making algo type
-	DecisionAlgoType s_AlgoType = DecisionAlgoType::MonsterChase;
-
 	// for grid
 	GraphWithWeights s_Grid(1, 1);
 
 	ofVec2f linePos1(s_MarginLeftX, s_MarginTopY);
-	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_Width);
-	ofVec2f linePosHor(s_MarginLeftX + s_Width, s_MarginTopY);
+	ofVec2f linePosVert(s_MarginLeftX, s_MarginTopY + s_WidthHeight);
+	ofVec2f linePosHor(s_MarginLeftX + s_WidthHeight, s_MarginTopY);
 
 	std::vector<Location> s_Obstacles;
 	Location s_GoalA, s_GoalB;
@@ -177,12 +194,15 @@ bool Is_CloseToPlayer(float dist)
 
 
 // ====================================
-
+// Behavior Tree
 void CreateBehaviorTree()
 {
 	// create tasks
 	RoamAway* t_roam = new RoamAway();
 	ChaseDown* t_chase = new ChaseDown();
+	InstantKill * t_kill = new InstantKill();
+	BoxKill * t_Box = new BoxKill();
+	SpeedUp * t_speedUp = new SpeedUp();
 
 	UntilFail* ufail_1 = new UntilFail(); // roam until 
 	ufail_1->m_Task = t_roam;
@@ -190,8 +210,7 @@ void CreateBehaviorTree()
 	UntilFail* ufail_2 = new UntilFail(); // chase until close
 	ufail_2->m_Task = t_chase;
 
-	InstantKill * t_kill = new InstantKill();
-	BoxKill * t_Box = new BoxKill();
+	
 
 	Selector* KillSelector = new Selector();
 	KillSelector->m_Tasks.push_back(t_kill);
@@ -199,7 +218,8 @@ void CreateBehaviorTree()
 
 	Sequencer * tmp = new Sequencer(); // A
 	tmp->m_Tasks.push_back(ufail_1); // 1
-	tmp->m_Tasks.push_back(ufail_2); // 2
+	tmp->m_Tasks.push_back(t_speedUp); // 2
+	tmp->m_Tasks.push_back(ufail_2); // 3
 	tmp->m_Tasks.push_back(KillSelector); // 3
 
 	s_mainRoot = tmp;
@@ -382,10 +402,8 @@ void ofApp::setup() {
 		_player.m_Character.mTargetRadArrive = 10;
 		_player.m_Character.mTimeTotargetArrive = 0.4f;
 		_player.UpdateTarget(ofGetLastFrameTime());
-		_monster.m_Character = _player.m_Character;
-		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
-		_monster.UpdateTarget(ofGetLastFrameTime());
-		_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
+		_player.m_PathColor = ofColor(0, 250, 0);
+		
 		break;
 
 	case DecisionAlgoType::MonsterChase:
@@ -399,12 +417,15 @@ void ofApp::setup() {
 		_player.m_Character.mTargetRadArrive = 10;
 		_player.m_Character.mTimeTotargetArrive = 0.4f;
 		_player.UpdateTarget(ofGetLastFrameTime());
+		_player.m_PathColor = ofColor(0, 250, 0);
+
 		_monster.m_Character = _player.m_Character;
-		_monster.m_Character.mChar.mMaxVel = 4;
-		_monster.m_Character.mMaxAccel = 11;
+		_monster.m_Character.mChar.mMaxVel = 2.5;
+		_monster.m_Character.mMaxAccel = 8;
 		_monster.m_PathcirclesPlayer = _player.m_PathcirclesPlayer;
 		_monster.UpdateTarget(ofGetLastFrameTime());
 		_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
+		_monster.m_PathColor = ofColor(30, 50, 180);
 		_player.m_Character.mChar.mPosition = ofVec2f(100, 100);
 		CreateBehaviorTree();
 		break;
@@ -422,7 +443,6 @@ void ofApp::update(){
 	case DecisionAlgoType::DecisionTree:
 
 		_player.UpdateTarget(ofGetLastFrameTime());
-		//_monster.UpdateTarget(ofGetLastFrameTime());
 		break;
 
 	case DecisionAlgoType::MonsterChase:
@@ -452,18 +472,17 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	// Grid Stuff
-	//if (s_AlgoType == DecisionAlgoType::DecisionTree)
+	if (s_AlgoType == DecisionAlgoType::DecisionTree)
 	{
 		ofFill();
 		ofSetColor(200, 0, 0);
 		DrawGrid();
-		
+
 		_player.DrawPath(); // draw path
-		_monster.DrawPath();
 
 		auto size = _player.m_PathcirclesPlayer.size();
 		ofSetColor(0, 0, 250); // Blue Goals
-		DrawCircleInCell(s_GoalA.x, s_GoalA.y );
+		DrawCircleInCell(s_GoalA.x, s_GoalA.y);
 		DrawCircleInCell(s_GoalB.x, s_GoalB.y);
 
 		ofSetColor(240, 0, 0);
@@ -479,15 +498,52 @@ void ofApp::draw(){
 
 		drawBoid(_player.m_Character.mChar.mPosition,
 			_player.m_Character.mChar.mOrientation,
+			ofColor(250, 0, 150));
+
+		ofFill();
+
+		// DrawTrap
+		for (auto l : _Traps)
+		{
+			ofColor(153, 0, 76);
+			DrawCircleInCell(l.x, l.y);
+		}
+	}
+	if (s_AlgoType == DecisionAlgoType::MonsterChase)
+	{
+		ofFill();
+		ofSetColor(200, 0, 0);
+		DrawGrid();
 		
-			ofColor(150, 180, 150));
+		_player.DrawPath(); // draw path
+		_monster.DrawPath();
+
+		auto size = _player.m_PathcirclesPlayer.size();
+		ofSetColor(0, 0, 250); // Blue Goals
+		DrawCircleInCell(s_GoalA.x, s_GoalA.y );
+
+		ofSetColor(240, 0, 0);
+		for (auto s : s_Grid.forests) // draw forests
+			DrawCircleInCell(s.x, s.y);
+
+		// follow stuff
+		ofSetColor(250, 0, 150);
+		ofNoFill();
+		ofFill();
+		ofDrawLine(_player.m_Character.mChar.mPosition,
+			_player.m_Character.mChar.mPosition + 10 * steer.mLinear); // acceleration line
+
+		drawBoid(_player.m_Character.mChar.mPosition,
+			_player.m_Character.mChar.mOrientation,
+			ofColor(150, 80, 250));
 		drawBoid(_monster.m_Character.mChar.mPosition,
 			_monster.m_Character.mChar.mOrientation,
 			ofColor(250, 0, 150));
 
 		// draw close radius
 		ofNoFill();
-		ofDrawCircle(_monster.m_Character.mChar.mPosition, 500);
+		ofDrawCircle(_monster.m_Character.mChar.mPosition, s_chaseRadius);
+		ofDrawCircle(_monster.m_Character.mChar.mPosition, s_killRadius);
 
 		ofFill();
 
@@ -511,7 +567,7 @@ void ofApp::drawBoid(ofVec2f &pos, float &ori, ofColor &clr)
 	// draw
 	ofSetColor(clr);
 	ofDrawCircle(ofVec2f(0, 0), 10);
-	ofSetColor(150, 200, 0);
+	ofSetColor(150, 20, 160);
 	ofDrawTriangle(ofVec2f(5, -10), ofVec2f(5, 10), ofVec2f(15, 0));
 	// reverse rotate
 	ofRotateZRad(-ori); // rotate
@@ -539,13 +595,15 @@ void ofApp::DrawCircleInCell(int x, int y)
 	ofDrawCircle(po + s_CellSize/2, 15.0f);
 }
 
-// reset
+// RESET
 void resetBehavTree()
 {
 	_IsTrapped = false;
 	_Traps.clear();
-	_player.m_Character.mChar.mPosition = ofVec2f(rand()%100, rand()%100);
-	_monster.m_Character.mChar.mPosition = ofVec2f(600, 600);
+	_player.m_Character.mChar.mPosition = 
+		ofVec2f(rand() % 80, rand() % (int)s_WidthHeight);
+	_monster.m_Character.mChar.mPosition = 
+		ofVec2f(650 + rand()%90, rand() % (int)s_WidthHeight);
 	_player.Reset();
 	_monster.Reset();
 	_player.m_PathcirclesPlayer = getRandomPathFortarget(_player.getQuantizedLocation());

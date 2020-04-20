@@ -44,7 +44,7 @@ public:
 
 	void DrawPath()
 	{
-		ofSetColor(83, 228, 250); // Yellow circles path
+		ofSetColor(m_PathColor); // Yellow circles path
 		for (auto s : m_PathcirclesPlayer)
 			DrawCircle_InCell(s.x, s.y);
 
@@ -74,4 +74,5 @@ public:
 	int m_CurTarget = 0; // index of current target
 	std::vector<Location> m_PathcirclesPlayer; // path
 	bool m_IsTargetReached = false;
+	ofColor m_PathColor;
 };

@@ -29,7 +29,7 @@ enum AlgoType {
 namespace {
 	
 	// intended screen width for drawing measurement
-	float s_Width = 740; 
+	float s_WidthHeight = 740; 
 
 	float s_boxPerLine = 20;
 	float s_MarginLeftX = 10;
