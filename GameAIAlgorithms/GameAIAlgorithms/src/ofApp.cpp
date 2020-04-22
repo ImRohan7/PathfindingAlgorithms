@@ -528,17 +528,11 @@ void ofApp::draw(){
 
 		// follow stuff
 		ofSetColor(250, 0, 150);
-		ofNoFill();
 		ofFill();
 		ofDrawLine(_player.m_Character.mChar.mPosition,
 			_player.m_Character.mChar.mPosition + 10 * steer.mLinear); // acceleration line
 
-		drawBoid(_player.m_Character.mChar.mPosition,
-			_player.m_Character.mChar.mOrientation,
-			ofColor(150, 80, 250));
-		drawBoid(_monster.m_Character.mChar.mPosition,
-			_monster.m_Character.mChar.mOrientation,
-			ofColor(250, 0, 150));
+		
 
 		// draw close radius
 		ofNoFill();
@@ -553,6 +547,14 @@ void ofApp::draw(){
 			ofColor(153, 0, 76);
 			DrawCircleInCell(l.x, l.y);
 		}
+
+		// boids
+		drawBoid(_player.m_Character.mChar.mPosition,
+			_player.m_Character.mChar.mOrientation,
+			ofColor(150, 80, 250));
+		drawBoid(_monster.m_Character.mChar.mPosition,
+			_monster.m_Character.mChar.mOrientation,
+			ofColor(250, 0, 150));
 	}
 }
 
@@ -606,6 +608,8 @@ void resetBehavTree()
 		ofVec2f(650 + rand()%90, rand() % (int)s_WidthHeight);
 	_player.Reset();
 	_monster.Reset();
+	_monster.m_Character.mChar.mMaxVel = 2.5;
+	_monster.m_Character.mMaxAccel = 8;
 	_player.m_PathcirclesPlayer = getRandomPathFortarget(_player.getQuantizedLocation());
 	_monster.m_PathcirclesPlayer = getRandomPathFortarget(_monster.getQuantizedLocation());
 	CreateBehaviorTree();
@@ -642,7 +646,14 @@ void ofApp::mousePressed(int x, int y, int button)
 	}
 	if (s_AlgoType == DecisionAlgoType::MonsterChase)
 	{
-		resetBehavTree();
+		if (button == 2) // right click add forest
+		{
+			addForest(loc);
+		}
+		else
+		{
+			resetBehavTree();
+		}
 	}
 }
 
